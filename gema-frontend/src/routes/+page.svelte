@@ -27,10 +27,13 @@
         localStorage.setItem('gema_token', token);
 
         const decodedToken: any = jwtDecode(token);
+        
+        // MUDANÇA AQUI: Adicionamos a informação da escola na sessão
         session.set({
           id: decodedToken.sub,
           email: decodedToken.email,
           profile: decodedToken.profile,
+          school: decodedToken.school // <-- ADICIONADO
         });
 
         await goto('/dashboard');

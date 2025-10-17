@@ -19,6 +19,8 @@
     session.set(null);
     goto('/');
   }
+
+  const isActive = (path: string) => $page.url.pathname.startsWith(path);
 </script>
 
 <div class="flex h-screen bg-gray-100">
@@ -36,7 +38,7 @@
         <a
           href="/dashboard"
           class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                 {$page.url.pathname === '/dashboard'
+                 {isActive('/dashboard')
                    ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                    : 'hover:bg-primary-600'}"
         >
@@ -51,7 +53,7 @@
               <a
                 href="/usuarios"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {$page.url.pathname.startsWith('/usuarios')
+                       {isActive('/usuarios')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -61,7 +63,7 @@
               <a
                 href="/cidades"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {$page.url.pathname.startsWith('/cidades')
+                       {isActive('/cidades')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -71,7 +73,7 @@
               <a
                 href="/escolas"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {$page.url.pathname.startsWith('/escolas')
+                       {isActive('/escolas')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -89,7 +91,7 @@
               <a
                 href="/produtos"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {$page.url.pathname.startsWith('/produtos')
+                       {isActive('/produtos')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -101,7 +103,7 @@
               <a
                 href="/estoque"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {$page.url.pathname.startsWith('/estoque')
+                       {isActive('/estoque')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -114,9 +116,18 @@
 
       <!-- Rodapé Sidebar -->
       <div class="p-4 border-t border-primary-700">
-        <div class="mb-3">
+        <div class="mb-3 space-y-1">
           <p class="font-semibold text-sm">{$session.email}</p>
           <p class="text-xs text-primary-300 capitalize">{$session.profile.replace('_', ' ')}</p>
+          
+          <!-- ===== BLOCO ADICIONADO AQUI ===== -->
+          {#if ($session.profile === 'escola' || $session.profile === 'cozinheira') && $session.school}
+            <div class="flex items-center gap-1 text-xs text-primary-200 pt-1">
+              <School class="w-3 h-3"/> 
+              <span>{$session.school.name}</span>
+            </div>
+          {/if}
+          <!-- =================================== -->
         </div>
 
         <button
