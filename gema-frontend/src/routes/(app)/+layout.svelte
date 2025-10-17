@@ -19,9 +19,6 @@
     session.set(null);
     goto('/');
   }
-
-  // Função para verificar se a rota está ativa
-  const isActive = (path: string) => $page.url.pathname.startsWith(path);
 </script>
 
 <div class="flex h-screen bg-gray-100">
@@ -39,7 +36,7 @@
         <a
           href="/dashboard"
           class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                 {isActive('/dashboard')
+                 {$page.url.pathname === '/dashboard'
                    ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                    : 'hover:bg-primary-600'}"
         >
@@ -54,7 +51,7 @@
               <a
                 href="/usuarios"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {isActive('/usuarios')
+                       {$page.url.pathname.startsWith('/usuarios')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -64,7 +61,7 @@
               <a
                 href="/cidades"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {isActive('/cidades')
+                       {$page.url.pathname.startsWith('/cidades')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -74,7 +71,7 @@
               <a
                 href="/escolas"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {isActive('/escolas')
+                       {$page.url.pathname.startsWith('/escolas')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -92,7 +89,7 @@
               <a
                 href="/produtos"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {isActive('/produtos')
+                       {$page.url.pathname.startsWith('/produtos')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -104,7 +101,7 @@
               <a
                 href="/estoque"
                 class="flex items-center gap-3 p-2 rounded-lg transition-colors
-                       {isActive('/estoque')
+                       {$page.url.pathname.startsWith('/estoque')
                          ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
                          : 'hover:bg-primary-600'}"
               >
@@ -136,7 +133,7 @@
   <div class="flex-1 flex flex-col">
     <header class="h-16 bg-white shadow flex justify-between items-center px-6">
       <h1 class="text-lg font-semibold text-gray-800 capitalize">
-        {#if $page.url.pathname === '/dashboard'}Painel Geral{/if}
+        {#if $page.url.pathname === '/dashboard'}Dashboard{/if}
         {#if $page.url.pathname.startsWith('/usuarios')}Usuários{/if}
         {#if $page.url.pathname.startsWith('/cidades')}Cidades{/if}
         {#if $page.url.pathname.startsWith('/escolas')}Escolas{/if}
