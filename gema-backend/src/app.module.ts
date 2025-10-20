@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { CidadesModule } from './cidades/cidades.module';
 import { EscolasModule } from './escolas/escolas.module';
 import { EstoqueModule } from './estoque/estoque.module';
+import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EstoqueModule } from './estoque/estoque.module';
     CidadesModule,
     EscolasModule,
     EstoqueModule,
+    SolicitacoesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

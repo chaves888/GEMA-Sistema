@@ -5,8 +5,8 @@
   import { page } from '$app/stores';
   import GemaLogo from '$lib/assets/logo-gema.png';
 
-  // Ícones Lucide
-  import { LayoutDashboard, Users, Building2, School, Package, Boxes, LogOut } from 'lucide-svelte';
+  // Ícones Lucide - Adicionando ClipboardList para as solicitações
+  import { LayoutDashboard, Users, Building2, School, Package, Boxes, LogOut, ClipboardList } from 'lucide-svelte';
 
   onMount(() => {
     initializeSession();
@@ -109,6 +109,19 @@
               >
                 <Boxes class="w-5 h-5" /> <span>Estoque</span>
               </a>
+              
+              <!-- ===== LINK ADICIONADO AQUI ===== -->
+              <a
+                href="/solicitacoes"
+                class="flex items-center gap-3 p-2 rounded-lg transition-colors
+                       {isActive('/solicitacoes')
+                         ? 'bg-primary-600 font-semibold shadow-inner border-l-4 border-white'
+                         : 'hover:bg-primary-600'}"
+              >
+                <ClipboardList class="w-5 h-5" /> <span>Solicitações</span>
+              </a>
+              <!-- ================================== -->
+
             {/if}
           </div>
         </div>
@@ -120,14 +133,12 @@
           <p class="font-semibold text-sm">{$session.email}</p>
           <p class="text-xs text-primary-300 capitalize">{$session.profile.replace('_', ' ')}</p>
           
-          <!-- ===== BLOCO ADICIONADO AQUI ===== -->
           {#if ($session.profile === 'escola' || $session.profile === 'cozinheira') && $session.school}
             <div class="flex items-center gap-1 text-xs text-primary-200 pt-1">
               <School class="w-3 h-3"/> 
               <span>{$session.school.name}</span>
             </div>
           {/if}
-          <!-- =================================== -->
         </div>
 
         <button
@@ -150,6 +161,9 @@
         {#if $page.url.pathname.startsWith('/escolas')}Escolas{/if}
         {#if $page.url.pathname.startsWith('/produtos')}Produtos{/if}
         {#if $page.url.pathname.startsWith('/estoque')}Estoque{/if}
+        <!-- ===== TÍTULO ADICIONADO AQUI ===== -->
+        {#if $page.url.pathname.startsWith('/solicitacoes')}Solicitações{/if}
+        <!-- ===================================== -->
       </h1>
     </header>
 
