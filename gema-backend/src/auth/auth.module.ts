@@ -2,28 +2,27 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from 'src/users/users.module'; // 1. Garante que UsersModule está importado
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { LocalStrategy } from './strategies/local.strategy'; // Criaremos em breve
-import { JwtStrategy } from './strategies/jwt.strategy';     // Criaremos em breve
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 
 export const jwtConstants = {
-    // IMPORTANTE: Mude isso e coloque em um arquivo de segredos (.env)!
     secret: 'SEGREDO_SUPER_SECRETO_PARA_PROJETO_GEMA',
 };
 
 @Module({
   imports: [
-    UsersModule,
+    UsersModule, // 2. Garante que UsersModule está na lista de imports
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '8h' }, // Token expira em 8 horas
+      signOptions: { expiresIn: '8h' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy], // Adicione as estratégias
+  providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

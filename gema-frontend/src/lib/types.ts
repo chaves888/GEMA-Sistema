@@ -12,7 +12,6 @@ export type SolicitacaoItem = {
     id: string; 
     name: string; 
     unit: string; 
-    // Incluímos o minStock aqui para referência, embora não seja usado diretamente no fluxo da solicitação
     minStock?: number; 
   };
 };
@@ -35,8 +34,43 @@ export type Solicitacao = {
   items: SolicitacaoItem[]; // Lista de itens pertencentes a esta solicitação
 };
 
-// --- Outros Tipos (Podem ser adicionados aqui no futuro) ---
+// --- Tipos para o Módulo de Cardápios ---
 
-// Exemplo:
-// export type User = { ... };
-// export type Product = { ... };
+// Tipo para um Produto (simplificado, como visto dentro de um cardápio)
+// (Podemos criar um tipo Product mais genérico se precisarmos)
+type CardapioProduct = {
+  id: string;
+  name: string;
+  unit: string;
+  minStock: number; 
+};
+
+// Tipo para um Item de Refeição (ex: 100g de Arroz)
+export type RefeicaoItem = {
+  id: string;
+  quantityPerStudent: number;
+  product: CardapioProduct;
+};
+
+// Tipo para uma Refeição (ex: Almoço de Segunda)
+export type Refeicao = {
+  id: string;
+  diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta';
+  tipo: 'manha' | 'tarde';
+  description: string | null;
+  items: RefeicaoItem[];
+};
+
+// Tipo para o Cardápio principal (semanal)
+export type Cardapio = {
+  id: string;
+  name: string;
+  startDate: string; // Vem como string JSON
+  endDate: string;   // Vem como string JSON
+  createdAt: string; // Vem como string JSON
+  createdBy: { // Informação simplificada do usuário que criou
+    id: string;
+    name: string;
+  };
+  refeicoes: Refeicao[]; // Lista de refeições (já vem com itens e produtos)
+};

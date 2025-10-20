@@ -10,6 +10,7 @@ import { CidadesModule } from './cidades/cidades.module';
 import { EscolasModule } from './escolas/escolas.module';
 import { EstoqueModule } from './estoque/estoque.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
+import { CardapiosModule } from './cardapios/cardapios.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
     EscolasModule,
     EstoqueModule,
     SolicitacoesModule,
+    CardapiosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
