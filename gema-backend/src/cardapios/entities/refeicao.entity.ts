@@ -1,9 +1,15 @@
-// src/cardapios/entities/refeicao.entity.ts
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Product } from 'src/products/entities/product.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Cardapio } from './cardapio.entity';
-import { RefeicaoItem } from './refeicao-item.entity'; // Será criado a seguir
 
-// Dias da semana úteis (Segunda a Sexta)
 export enum DiaSemana {
   SEGUNDA = 'segunda',
   TERCA = 'terca',
@@ -12,15 +18,13 @@ export enum DiaSemana {
   SEXTA = 'sexta',
 }
 
-// Tipos de Refeição (Manhã/Tarde)
 export enum TipoRefeicao {
-  MANHA = 'manha',   // Refeição das 10h
-  TARDE = 'tarde',   // Refeição das 15h
+  MANHA = 'manha', // 10h
+  TARDE = 'tarde', // 15h
 }
 
-@Entity('refeicoes') // Nome da tabela
-// Garante unicidade: não pode haver duas refeições de Manhã na Segunda no mesmo cardápio
-@Unique(['cardapio', 'diaSemana', 'tipo']) 
+@Entity('refeicoes')
+@Unique(['cardapio', 'diaSemana', 'tipo']) // Garante que só exista uma refeição (ex: Manhã de Segunda) por cardápio
 export class Refeicao {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -31,18 +35,20 @@ export class Refeicao {
   @Column({ type: 'enum', enum: TipoRefeicao })
   tipo: TipoRefeicao;
 
-  @Column({ type: 'text', nullable: true }) // Descrição opcional
-  description: string | null;
+  @Column({ type: 'text' })
+  description: string; // "Nome do prato"
 
-  // Relação: A qual Cardápio esta Refeição pertence?
-  // onDelete: 'CASCADE' -> Se o Cardapio for excluído, a Refeicao também será.
-  @ManyToOne(() => Cardapio, (cardapio) => cardapio.refeicoes, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'cardapio_id' })
-  cardapio: Cardapio; // A entidade Cardapio (não apenas o ID)
+  @ManyToOne(() => Cardapio, (cardapio) => cardapio.refeicoes, {
+    onDelete: 'CASCADE',
+  })
+  cardapio: Cardapio;
 
-  // Relação: Quais Itens (produtos) compõem esta Refeição?
-  // cascade: true -> Salvar/Remover Refeicao afeta RefeicaoItens
-  // eager: true -> Carregar Refeicao carrega Itens junto
-  @OneToMany(() => RefeicaoItem, (item) => item.refeicao, { cascade: true, eager: true })
-  items: RefeicaoItem[];
+  // Relação "lista de produtos" (sem quantidade, conforme especificado)
+  @ManyToMany(() => Product, { eager: true })
+  @JoinTable({
+    name: 'refeicao_products',
+    joinColumn: { name: 'refeicao_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'id' },
+  })
+  products: Product[];
 }

@@ -1,38 +1,55 @@
-// src/cardapios/entities/cardapio.entity.ts
 import { User } from 'src/users/entities/user.entity';
-import { 
-  Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, 
-  OneToMany, PrimaryGeneratedColumn, UpdateDateColumn 
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Refeicao } from './refeicao.entity';
+
+export enum CardapioStatus {
+  RASCUNHO = 'rascunho',
+  PUBLICADO = 'publicado',
+}
 
 @Entity('cardapios')
 export class Cardapio {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 150 })
+  @Column()
   name: string;
 
-  // --- MUDANÇA AQUI ---
-  // Mudamos o tipo da coluna e da propriedade para 'string'
-  @Column({ type: 'varchar', length: 10 }) // Salva como "YYYY-MM-DD"
+  @Column({ type: 'date' })
   startDate: string;
 
-  @Column({ type: 'varchar', length: 10 }) // Salva como "YYYY-MM-DD"
+  @Column({ type: 'date' })
   endDate: string;
-  // --- FIM DA MUDANÇA ---
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Column({
+    type: 'enum',
+    enum: CardapioStatus,
+    default: CardapioStatus.RASCUNHO,
+  })
+  status: CardapioStatus;
+
+  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'created_by_user_id' })
+  createdBy: User;
+
+  @OneToMany(() => Refeicao, (refeicao) => refeicao.cardapio, {
+    cascade: true,
+    eager: true,
+  })
+  refeicoes: Refeicao[];
+
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt: Date;
-
-  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true }) 
-  @JoinColumn({ name: 'created_by_user_id' })
-  createdBy: User | null;
-
-  @OneToMany(() => Refeicao, (refeicao) => refeicao.cardapio, { cascade: true, eager: true })
-  refeicoes: Refeicao[]; 
 }

@@ -2,19 +2,18 @@
   import { onMount } from 'svelte';
   import * as api from '$lib/api';
   import { session } from '$lib/sessionStore';
-  import { format, parseISO } from 'date-fns'; // <-- Importa parseISO
+  import { format, parseISO } from 'date-fns';
   import { ptBR } from 'date-fns/locale';
   import Modal from '$lib/components/Modal.svelte';
   import CardapioForm from '$lib/components/CardapioForm.svelte';
   import { CalendarPlus, Edit, Eye } from 'lucide-svelte';
-  import { goto } from '$app/navigation'; 
+  import { goto } from '$app/navigation';
 
-  // O tipo reflete que as datas são strings
   type CardapioListItem = {
     id: string;
     name: string;
-    startDate: string; // YYYY-MM-DD
-    endDate: string;   // YYYY-MM-DD
+    startDate: string;
+    endDate: string;
     createdBy: { name: string; };
   };
 
@@ -59,8 +58,7 @@
     try {
         const createdCardapio = await api.post('cardapios', dataToSend);
         showCreateModal = false;
-        // Redireciona para a página de detalhes para adicionar refeições
-        await goto(`/cardapios/${createdCardapio.id}`); 
+        await goto(`/cardapios/${createdCardapio.id}`);  
     } catch (e: any) {
         if (e && e.message) { alert(`Erro: ${e.message}`); }
         else { alert('Erro ao criar o cardápio.'); }
@@ -74,14 +72,9 @@
       goto(`/cardapios/${id}`);
   }
 
-  // --- NOVA FUNÇÃO AUXILIAR (Timezone Fix) ---
-  // Converte a string "YYYY-MM-DD" para um objeto Date no fuso horário local
-  // e depois formata para "dd/MM/yy"
   function formatLocalDate(dateString: string): string {
     if (!dateString) return 'N/A';
     try {
-      // parseISO('2025-11-03') entende a string como "meia-noite do dia 03"
-      // Se usássemos new Date('2025-11-03'), ele interpretaria como UTC e poderia pular o dia.
       const date = parseISO(dateString); 
       return format(date, 'dd/MM/yy', { locale: ptBR });
     } catch (e) {
@@ -89,17 +82,21 @@
       return 'Data Inválida';
     }
   }
-
 </script>
 
-<div class="space-y-6 animate-fadeIn">
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<!-- 🌈 Container Principal -->
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-6 space-y-8 animate-fadeIn">
+
+  <!-- 🔹 Cabeçalho -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900">Cardápios Semanais</h1>
+      <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+        Cardápios Semanais
+      </h1>
       {#if $session?.profile === 'nutricionista'}
-        <p class="text-gray-500 mt-1">Crie, gerencie e distribua os cardápios.</p>
+        <p class="text-gray-600 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p>
       {:else}
-        <p class="text-gray-500 mt-1">Consulte os cardápios da semana.</p>
+        <p class="text-gray-600 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p>
       {/if}
     </div>
 
@@ -107,59 +104,59 @@
       <button 
         on:click={handleNovoCardapio}
         disabled={isActionLoading}
-        class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-md transition-transform hover:scale-105 disabled:opacity-50"
+        class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50"
       >
         <CalendarPlus class="w-5 h-5"/>
-        Novo Cardápio Semanal
+        Novo Cardápio
       </button>
     {/if}
   </div>
 
+  <!-- 🔸 Conteúdo Principal -->
   {#if isLoading}
-    <div class="text-center p-10"><p class="text-gray-500">⏳ Carregando cardápios...</p></div>
+    <div class="flex justify-center items-center p-10">
+      <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando cardápios...</p>
+    </div>
   {:else if error}
-    <div class="bg-red-100 text-red-700 p-4 rounded-lg">{error}</div>
+    <div class="bg-red-100 text-red-700 p-4 rounded-lg shadow-sm text-center font-medium">{error}</div>
   {:else if cardapios.length === 0}
-     <div class="text-center p-10 bg-white rounded-lg shadow-sm border">
-        <p class="text-gray-500 font-medium">Nenhum cardápio encontrado.</p>
+     <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
+        <p class="text-gray-600 font-semibold text-lg">Nenhum cardápio encontrado.</p>
         {#if $session?.profile === 'nutricionista'}
-          <p class="text-sm text-gray-400 mt-2">Clique em "+ Novo Cardápio" para começar.</p>
+          <p class="text-sm text-gray-400 mt-2">Clique em “Novo Cardápio” para começar.</p>
         {:else}
-           <p class="text-sm text-gray-400 mt-2">Nenhum cardápio ativo cadastrado para esta semana.</p>
+           <p class="text-sm text-gray-400 mt-2">Aguardando o envio de novos cardápios.</p>
         {/if}
      </div>
   {:else}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- 🧾 Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
       {#each cardapios as cardapio (cardapio.id)}
-        <div class="bg-white rounded-lg shadow-md border hover:shadow-lg transition-shadow flex flex-col">
-          <div class="p-5">
-            <h3 class="font-bold text-lg text-gray-800">{cardapio.name}</h3>
-            <p class="text-sm text-gray-500 mt-1">
-              Período:
-              <span class="font-medium text-gray-600">
-                {formatLocalDate(cardapio.startDate)}
-                a 
-                {formatLocalDate(cardapio.endDate)}
-              </span>
+        <div class="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col">
+          <div class="p-6 flex-1">
+            <h3 class="font-bold text-lg text-gray-800 truncate">{cardapio.name}</h3>
+            <p class="text-sm text-gray-500 mt-2">
+              <span class="font-medium text-gray-700">Período:</span><br>
+              <span class="text-gray-600">{formatLocalDate(cardapio.startDate)} a {formatLocalDate(cardapio.endDate)}</span>
             </p>
-             <p class="text-xs text-gray-400 mt-2">Criado por: {cardapio.createdBy?.name}</p>
+            <p class="text-xs text-gray-400 mt-3">👩‍🍳 Criado por {cardapio.createdBy?.name}</p>
           </div>
-          <div class="bg-gray-50 p-3 text-right rounded-b-lg border-t mt-auto">
+          <div class="bg-gray-50 p-4 text-right rounded-b-2xl border-t mt-auto">
             {#if $session?.profile === 'nutricionista'}
               <button 
                 on:click={() => handleViewEdit(cardapio.id)} 
-                class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold text-sm"
+                class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold text-sm transition-colors"
               >
                 <Edit class="w-4 h-4"/>
-                Gerenciar Cardápio
+                Gerenciar
               </button>
             {:else}
               <button 
                 on:click={() => handleViewEdit(cardapio.id)} 
-                class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 font-semibold text-sm"
+                class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 font-semibold text-sm transition-colors"
               >
                 <Eye class="w-4 h-4"/>
-                Visualizar Cardápio
+                Visualizar
               </button>
             {/if}
           </div>
@@ -169,6 +166,7 @@
   {/if}
 </div>
 
+<!-- 🪟 Modal de Criação -->
 {#if showCreateModal}
 <Modal show={showCreateModal} on:close={() => showCreateModal = false}>
   <CardapioForm 
