@@ -1,34 +1,101 @@
+🧩 Funcionalidades Pendentes e Ajustes do Sistema
+
+Este documento descreve as funcionalidades pendentes, melhorias e regras específicas por perfil de usuário (Prefeitura, Escola, Nutricionista e Cozinheira), além de ajustes gerais aplicáveis a todo o sistema.
+
 🏛️ PREFEITURA
-Data de Entrega: Incluir um campo de "Data de Entrega Prevista" no momento da aprovação da solicitação da escola.
+📅 Data de Entrega
 
-Justificativa de Estoque: Ao diminuir a quantidade de um item no estoque da prefeitura, exigir uma justificativa obrigatória em um modal. O sistema deve salvar quem, quando e por que a alteração foi feita.
+Incluir um campo "Data de Entrega Prevista" no momento da aprovação da solicitação da escola.
 
-Cadastro de Cidades: Melhorar o cadastro de cidades para incluir um campo de CEP e um seletor de UF (Estado), validando se o CEP pertence àquele estado/cidade.
+📦 Justificativa de Estoque
+
+Ao diminuir a quantidade de um item no estoque:
+
+Exibir um modal obrigatório solicitando justificativa.
+
+O modal deve conter um campo de texto para o motivo da alteração.
+
+O sistema deve registrar:
+
+Usuário responsável
+
+Data e hora da modificação
+
+Motivo informado
+
+🗺️ Cadastro de Cidades
+
+Melhorar o cadastro de cidades para incluir:
+
+Campo de CEP
+
+Seletor de UF (Estado)
+
+O sistema deve validar se o CEP pertence à cidade e UF selecionadas.
 
 🏫 ESCOLA
-Status de Recebimento: Se a escola confirmar o recebimento de um item com quantidade 0, o status desse item específico deve mudar para "Pendente" (ou "Não Recebido") em vez de fechar o pedido.
+📦 Status de Recebimento
 
-Listagem de Solicitações: Adicionar 3 novas colunas na tela de solicitações da escola:
+Caso a escola confirme o recebimento de um item com quantidade 0, o status do produto deve ser alterado automaticamente para:
 
-Quantidade Solicitada (total)
+“Pendente” ou “Não Recebido” (em vez de “Concluído”).
 
-Quantidade Liberada (total aprovado pela prefeitura)
+📋 Listagem de Solicitações
 
-Data Prevista de Entrega (informada pela prefeitura)
+Na listagem de solicitações da escola, adicionar as seguintes colunas:
+
+Quantidade Solicitada — total requisitado pela escola.
+
+Quantidade Liberada — total aprovado pela prefeitura.
+
+Data Prevista de Entrega — informada pela prefeitura no momento da aprovação.
 
 🍽️ NUTRICIONISTA
-Publicação de Cardápio: O sistema não deve permitir "Publicar" um cardápio se algum dia útil (para o qual não foi marcado "Sem Aula") estiver sem as refeições da manhã e da tarde preenchidas.
+📅 Publicação de Cardápio
 
-Simplificação do Cardápio: Remover o campo "Nome" da criação do cardápio, preenchendo-o automaticamente com base nas datas selecionadas (ex: "Cardápio de 27/10 a 31/10").
+O sistema não deve permitir publicação de um cardápio se:
 
-Opção "Sem Aula": Em cada dia útil do cardápio (seg, ter, qua, etc.), adicionar um checkbox "Sem Aula". Se marcado, o preenchimento das refeições (manhã/tarde) para aquele dia deixa de ser obrigatório.
+Algum dia útil (não marcado como “Sem Aula”) estiver sem preenchimento das refeições Manhã e Tarde.
 
-Validação de Data: Impedir a criação de cardápios com data de início anterior à data atual.
+🧾 Simplificação do Cardápio
+
+Remover o campo “Nome” do formulário de criação do cardápio.
+
+O nome deve ser gerado automaticamente com base no período, por exemplo:
+
+“Cardápio de 27/10 a 31/10”.
+
+📆 Opção “Sem Aula”
+
+Em cada dia útil do cardápio, incluir um checkbox “Sem Aula”.
+
+Quando marcado, os campos de refeição Manhã e Tarde tornam-se opcionais.
+
+⏰ Validação de Data
+
+Impedir a criação de cardápios com data inicial anterior à data atual.
 
 👩‍🍳 COZINHEIRA
-Acesso ao Estoque: Permitir que a cozinheira visualize o estoque da escola (somente leitura), mas sem permissão para fazer ajustes.
+📊 Acesso ao Estoque
+
+A cozinheira poderá apenas visualizar o estoque da escola.
+
+Não possui permissão de edição, exclusão ou movimentação de itens.
 
 🔐 GERAL (Todos os Perfis)
-Login: Adicionar a funcionalidade "Esqueci minha senha" na tela de login.
+🔑 Login
 
-Validação de E-mail: Implementar uma validação mais robusta no formato do e-mail durante o cadastro.
+Adicionar a funcionalidade “Esqueci minha senha” na tela de login.
+
+📧 Validação de E-mail
+
+Implementar validação robusta de e-mail, garantindo:
+
+Formato correto (ex: usuario@dominio.com
+)
+
+Domínio válido
+
+📘 Observação
+
+Essas regras e melhorias devem ser integradas ao fluxo atual do sistema, mantendo a segurança, rastreabilidade e coerência entre os módulos de Prefeitura, Escola, Nutricionista e Cozinheira.
