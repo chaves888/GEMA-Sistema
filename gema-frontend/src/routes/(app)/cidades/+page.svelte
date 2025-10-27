@@ -4,8 +4,8 @@
   import Modal from '$lib/components/Modal.svelte';
   import CidadeForm from '$lib/components/CidadeForm.svelte';
 
-  type Cidade = { id: string; name: string; state: string; };
-  
+  type Cidade = { id: string; name: string; state: string };
+
   let cidades: Cidade[] = [];
   let isLoading = true;
   let error: string | null = null;
@@ -33,7 +33,7 @@
 
   function openEditModal(cidade: Cidade) {
     isEditing = true;
-    currentCidade = { ...cidade }; 
+    currentCidade = { ...cidade };
     showModal = true;
   }
 
@@ -42,7 +42,7 @@
     try {
       if (isEditing) {
         const updatedCidade = await api.patch(`cidades/${cidadeToSave.id}`, cidadeToSave);
-        cidades = cidades.map(c => c.id === updatedCidade.id ? updatedCidade : c);
+        cidades = cidades.map(c => (c.id === updatedCidade.id ? updatedCidade : c));
       } else {
         const newCidade = await api.post('cidades', cidadeToSave);
         cidades = [...cidades, newCidade];
@@ -53,7 +53,7 @@
       console.error(e);
     }
   }
-  
+
   async function deleteCidade(cidadeId: string, cidadeName: string) {
     if (!confirm(`Tem certeza que deseja excluir a cidade "${cidadeName}"?`)) return;
     try {
@@ -68,8 +68,6 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10 px-6 space-y-8 animate-fadeIn">
-
-  <!-- 🔹 Cabeçalho -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-6 rounded-xl shadow-sm border border-gray-100">
     <div>
       <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
@@ -78,7 +76,7 @@
       <p class="text-gray-600 mt-1 text-sm">Adicione, edite e remova cidades cadastradas no sistema.</p>
     </div>
 
-    <button 
+    <button
       on:click={openAddModal}
       class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95"
     >
@@ -86,7 +84,6 @@
     </button>
   </div>
 
-  <!-- 🔸 Conteúdo -->
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
       <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando cidades...</p>
@@ -114,14 +111,16 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">{cidade.name}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 uppercase">{cidade.state}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                <button 
-                  on:click={() => openEditModal(cidade)} 
-                  class="text-primary-600 hover:text-primary-800 font-semibold transition-colors">
+                <button
+                  on:click={() => openEditModal(cidade)}
+                  class="text-primary-600 hover:text-primary-800 font-semibold transition-colors"
+                >
                   Editar
                 </button>
-                <button 
-                  on:click={() => deleteCidade(cidade.id, cidade.name)} 
-                  class="text-red-600 hover:text-red-800 font-semibold transition-colors">
+                <button
+                  on:click={() => deleteCidade(cidade.id, cidade.name)}
+                  class="text-red-600 hover:text-red-800 font-semibold transition-colors"
+                >
                   Excluir
                 </button>
               </td>
@@ -133,14 +132,20 @@
   {/if}
 </div>
 
-<Modal show={showModal} on:close={() => showModal = false}>
-  <CidadeForm bind:cidade={currentCidade} {isEditing} on:save={handleSave} on:cancel={() => showModal = false} />
+<Modal show={showModal} on:close={() => (showModal = false)} size="max-w-lg">
+  <CidadeForm bind:cidade={currentCidade} {isEditing} on:save={handleSave} on:cancel={() => (showModal = false)} />
 </Modal>
 
 <style>
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .animate-fadeIn {

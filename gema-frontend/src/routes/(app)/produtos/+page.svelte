@@ -5,13 +5,13 @@
   import ProductForm from '$lib/components/ProductForm.svelte';
   import { session } from '$lib/sessionStore';
 
-  type Product = { 
-    id: string; 
-    name: string; 
-    unit: string; 
+  type Product = {
+    id: string;
+    name: string;
+    unit: string;
     minStock: number;
   };
-  
+
   let products: Product[] = [];
   let isLoading = true;
   let error: string | null = null;
@@ -47,17 +47,17 @@
     try {
       if (isEditing) {
         const updatedProduct = await api.patch(`products/${productToSave.id}`, productToSave);
-        products = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+        products = products.map(p => (p.id === updatedProduct.id ? updatedProduct : p));
       } else {
         const newProduct = await api.post('products', productToSave);
         products = [...products, newProduct];
       }
       showModal = false;
     } catch (e: any) {
-      if (e && e.message) { 
-        alert(`Erro: ${e.message}`); 
-      } else { 
-        alert('Erro ao salvar o produto.'); 
+      if (e && e.message) {
+        alert(`Erro: ${e.message}`);
+      } else {
+        alert('Erro ao salvar o produto.');
       }
       console.error(e);
     }
@@ -69,16 +69,17 @@
       await api.del(`products/${productId}`);
       products = products.filter(p => p.id !== productId);
     } catch (e: any) {
-      if (e && e.message) { alert(`Erro: ${e.message}`); }
-      else { alert('Falha ao excluir o produto.'); }
+      if (e && e.message) {
+        alert(`Erro: ${e.message}`);
+      } else {
+        alert('Falha ao excluir o produto.');
+      }
       console.error(e);
     }
   }
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10 px-6 space-y-8 animate-fadeIn">
-
-  <!-- 🔹 Cabeçalho -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-6 rounded-xl shadow-sm border border-gray-100">
     <div>
       <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
@@ -88,7 +89,7 @@
     </div>
 
     {#if $session?.profile === 'prefeitura'}
-      <button 
+      <button
         on:click={openAddModal}
         class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95"
       >
@@ -97,7 +98,6 @@
     {/if}
   </div>
 
-  <!-- 🔸 Conteúdo -->
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
       <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando produtos...</p>
@@ -142,15 +142,20 @@
   {/if}
 </div>
 
-<!-- 🔹 Modal -->
-<Modal show={showModal} on:close={() => showModal = false}>
-  <ProductForm bind:product={currentProduct} {isEditing} on:save={handleSave} on:cancel={() => showModal = false} />
+<Modal show={showModal} on:close={() => (showModal = false)} size="max-w-lg">
+  <ProductForm bind:product={currentProduct} {isEditing} on:save={handleSave} on:cancel={() => (showModal = false)} />
 </Modal>
 
 <style>
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .animate-fadeIn {

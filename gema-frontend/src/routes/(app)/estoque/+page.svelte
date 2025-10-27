@@ -35,11 +35,7 @@
     error = null;
 
     try {
-      estoque = await api.get(
-        userProfile === 'prefeitura'
-          ? 'estoque/prefeitura'
-          : 'estoque/escola'
-      );
+      estoque = await api.get(userProfile === 'prefeitura' ? 'estoque/prefeitura' : 'estoque/escola');
     } catch (e) {
       error = '❌ Não foi possível carregar o estoque.';
       console.error(e);
@@ -62,7 +58,7 @@
           ? await api.patch('estoque/prefeitura', { productId, quantity })
           : await api.patch('estoque/escola', { productId, quantity });
 
-      const index = estoque.findIndex((i) => i.product.id === productId);
+      const index = estoque.findIndex(i => i.product.id === productId);
       if (index !== -1) estoque[index] = updatedItem;
 
       estoque.sort((a, b) => a.percentage - b.percentage);
@@ -76,8 +72,6 @@
 </script>
 
 <div class="min-h-screen py-10 px-6 space-y-8 bg-gradient-to-b from-gray-50 to-gray-100 animate-fadeIn">
-
-  <!-- 🔹 Cabeçalho -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-6 rounded-xl shadow-sm border border-gray-100">
     <div>
       {#if $session?.profile === 'prefeitura'}
@@ -93,7 +87,6 @@
     </div>
   </div>
 
-  <!-- 🔸 Conteúdo -->
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
       <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando estoque...</p>
@@ -104,8 +97,6 @@
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       {#each estoque as item (item.product.id)}
         <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-200 animate-fadeUp">
-          
-          <!-- Info Produto -->
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="font-semibold text-gray-900 text-lg">{item.product.name}</h3>
@@ -126,7 +117,6 @@
             </span>
           </div>
 
-          <!-- Barra de Status -->
           <div>
             <StatusBar percentage={item.percentage} status={item.status} />
             <div class="flex justify-between text-sm mt-2">
@@ -137,7 +127,6 @@
             </div>
           </div>
 
-          <!-- Botão Ajustar -->
           <button
             on:click={() => openAjusteModal(item)}
             class="mt-5 w-full py-2 rounded-lg font-semibold text-primary-600 hover:bg-primary-50 hover:shadow transition-all duration-200"
@@ -151,27 +140,35 @@
 </div>
 
 {#if currentItem}
-  <Modal show={showModal} on:close={() => showModal = false}>
-    <AjusteEstoqueForm
-      item={currentItem}
-      on:save={handleSave}
-      on:cancel={() => showModal = false}
-    />
+  <Modal show={showModal} on:close={() => (showModal = false)} size="max-w-lg">
+    <AjusteEstoqueForm item={currentItem} on:save={handleSave} on:cancel={() => (showModal = false)} />
   </Modal>
 {/if}
 
 <style>
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
   .animate-fadeIn {
     animation: fadeIn 0.25s ease-out;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   .animate-fadeUp {
     animation: fadeUp 0.3s ease-out forwards;

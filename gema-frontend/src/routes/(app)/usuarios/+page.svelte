@@ -5,14 +5,14 @@
   import UserForm from '$lib/components/UserForm.svelte';
   import { session } from '$lib/sessionStore';
 
-  type User = { 
-    id: string; 
-    name: string; 
-    email: string; 
+  type User = {
+    id: string;
+    name: string;
+    email: string;
     profile: string;
-    school?: { id: string, name: string };
+    school?: { id: string; name: string };
   };
-  
+
   let users: User[] = [];
   let isLoading = true;
   let error: string | null = null;
@@ -22,13 +22,13 @@
   let currentUser: any = {};
 
   onMount(async () => {
-    try { 
-      users = await api.get('users'); 
-    } catch (e) { 
-      error = 'Não foi possível carregar os usuários.'; 
-      console.error(e); 
-    } finally { 
-      isLoading = false; 
+    try {
+      users = await api.get('users');
+    } catch (e) {
+      error = 'Não foi possível carregar os usuários.';
+      console.error(e);
+    } finally {
+      isLoading = false;
     }
   });
 
@@ -40,7 +40,7 @@
 
   function openEditModal(user: User) {
     isEditing = true;
-    currentUser = { ...user, password: '', schoolId: user.school?.id }; 
+    currentUser = { ...user, password: '', schoolId: user.school?.id };
     showModal = true;
   }
 
@@ -53,7 +53,7 @@
     try {
       if (isEditing) {
         const updatedUser = await api.patch(`users/${userToSave.id}`, userToSave);
-        users = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+        users = users.map(u => (u.id === updatedUser.id ? updatedUser : u));
       } else {
         const newUser = await api.post('users', userToSave);
         users = [...users, newUser];
@@ -65,7 +65,7 @@
       console.error(e);
     }
   }
-  
+
   async function deleteUser(userId: string, userName: string) {
     if (!confirm(`Tem certeza que deseja excluir o usuário "${userName}"?`)) return;
     try {
@@ -79,10 +79,7 @@
   }
 </script>
 
-<!-- 🌈 Container Principal -->
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-6 space-y-8 animate-fadeIn">
-
-  <!-- 🔹 Cabeçalho -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
     <div>
       <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
@@ -91,7 +88,7 @@
       <p class="text-gray-600 mt-1 text-sm">Crie, edite e gerencie os acessos ao sistema.</p>
     </div>
 
-    <button 
+    <button
       on:click={openAddModal}
       class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95"
     >
@@ -99,7 +96,6 @@
     </button>
   </div>
 
-  <!-- 🔸 Conteúdo Principal -->
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
       <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando usuários...</p>
@@ -107,10 +103,10 @@
   {:else if error}
     <div class="bg-red-100 text-red-700 p-4 rounded-lg shadow-sm text-center font-medium">{error}</div>
   {:else if users.length === 0}
-     <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
-        <p class="text-gray-600 font-semibold text-lg">Nenhum usuário encontrado.</p>
-        <p class="text-sm text-gray-400 mt-2">Clique em “Novo Usuário” para adicionar o primeiro.</p>
-     </div>
+    <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
+      <p class="text-gray-600 font-semibold text-lg">Nenhum usuário encontrado.</p>
+      <p class="text-sm text-gray-400 mt-2">Clique em “Novo Usuário” para adicionar o primeiro.</p>
+    </div>
   {:else}
     <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
@@ -131,14 +127,16 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">{user.profile.replace('_', ' ')}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.school?.name || 'N/A'}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                <button 
-                  on:click={() => openEditModal(user)} 
-                  class="text-primary-600 hover:text-primary-800 font-semibold transition-colors">
+                <button
+                  on:click={() => openEditModal(user)}
+                  class="text-primary-600 hover:text-primary-800 font-semibold transition-colors"
+                >
                   Editar
                 </button>
-                <button 
-                  on:click={() => deleteUser(user.id, user.name)} 
-                  class="text-red-600 hover:text-red-800 font-semibold transition-colors">
+                <button
+                  on:click={() => deleteUser(user.id, user.name)}
+                  class="text-red-600 hover:text-red-800 font-semibold transition-colors"
+                >
                   Excluir
                 </button>
               </td>
@@ -150,15 +148,20 @@
   {/if}
 </div>
 
-<!-- 🪟 Modal de Formulário -->
-<Modal show={showModal} on:close={() => showModal = false}>
-  <UserForm bind:user={currentUser} {isEditing} on:save={handleSave} on:cancel={() => showModal = false} />
+<Modal show={showModal} on:close={() => (showModal = false)} size="max-w-lg">
+  <UserForm bind:user={currentUser} {isEditing} on:save={handleSave} on:cancel={() => (showModal = false)} />
 </Modal>
 
 <style>
   @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .animate-fadeIn {
