@@ -33,6 +33,12 @@ Seletor de UF (Estado)
 
 O sistema deve validar se o CEP pertence à cidade e UF selecionadas.
 
+📦 Visualização de Estoque das Escolas
+
+A Prefeitura poderá visualizar o estoque de cada escola, em modo somente leitura.
+
+Não será permitido editar, excluir ou movimentar itens do estoque da escola.
+
 🏫 ESCOLA
 📦 Status de Recebimento
 
