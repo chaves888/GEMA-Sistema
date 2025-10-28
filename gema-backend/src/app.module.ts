@@ -11,6 +11,7 @@ import { EscolasModule } from './escolas/escolas.module';
 import { EstoqueModule } from './estoque/estoque.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 import { CardapiosModule } from './cardapios/cardapios.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CardapiosModule } from './cardapios/cardapios.module';
     EstoqueModule,
     SolicitacoesModule,
     CardapiosModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,9 +1,7 @@
-import { IsDateString, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsDateString, Matches } from 'class-validator';
 
 export class CreateCardapioDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+  // O campo 'name' foi removido
 
   @IsDateString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {

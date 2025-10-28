@@ -19,7 +19,10 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { User, UserProfile } from 'src/users/entities/user.entity';
 import { SetRefeicaoDto } from './dto/set-refeicao.dto';
+import { SetHolidayDto } from './dto/set-holiday.dto'; // <-- Importar novo DTO
+import { Request } from 'express'; // Importar Request do Express
 
+// Interface para garantir que req.user exista e tenha o tipo correto
 interface RequestWithUser extends Request {
   user: User;
 }
@@ -45,15 +48,16 @@ export class CardapiosController {
 
   // Todos os perfis logados podem listar cardápios (Serviço cuida da regra)
   @Get()
-  @Roles(UserProfile.NUTRICIONISTA, UserProfile.PREFEITURA, UserProfile.ESCOLA, UserProfile.COZINHEIRA)
   findAll(@Req() req: RequestWithUser) {
+    // Nota: Removido @Roles para permitir acesso autenticado geral,
+    // a lógica de quem vê o quê está no service.findAll(req.user)
     return this.cardapiosService.findAll(req.user);
   }
 
   // Todos os perfis logados podem ver detalhes (Serviço cuida da regra)
   @Get(':id')
-  @Roles(UserProfile.NUTRICIONISTA, UserProfile.PREFEITURA, UserProfile.ESCOLA, UserProfile.COZINHEIRA)
   findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
+    // Nota: Removido @Roles, a lógica está no service.findOne(id, req.user)
     return this.cardapiosService.findOne(id, req.user);
   }
 
@@ -74,7 +78,7 @@ export class CardapiosController {
     return this.cardapiosService.remove(id, req.user);
   }
 
-  // --- Gestão das Refeições (Manhã/Tarde) ---
+  // --- Gestão das Refeições ---
 
   @Post(':id/refeicoes')
   @Roles(UserProfile.NUTRICIONISTA)
@@ -95,4 +99,16 @@ export class CardapiosController {
   ) {
     return this.cardapiosService.removeRefeicao(refeicaoId, req.user);
   }
+
+  // --- NOVA ROTA: Marcar/Desmarcar Feriado ---
+  @Patch(':id/holiday')
+  @Roles(UserProfile.NUTRICIONISTA)
+  setHoliday(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() setHolidayDto: SetHolidayDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.cardapiosService.setHoliday(id, setHolidayDto, req.user);
+  }
+  // --- FIM NOVA ROTA ---
 }

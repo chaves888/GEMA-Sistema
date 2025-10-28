@@ -19,5 +19,8 @@ import { Escola } from 'src/escolas/entities/escola.entity';
   ],
   controllers: [EstoqueController],
   providers: [EstoqueService],
+  // --- ADICIONE ESTA LINHA ---
+  exports: [EstoqueService], // Exporta o serviço para outros módulos poderem usá-lo
+  // --- FIM DA ADIÇÃO ---
 })
 export class EstoqueModule {}
