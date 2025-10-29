@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 20/10/2025 às 06:11
+-- Tempo de geração: 29/10/2025 às 21:02
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -24,21 +24,41 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `cardapios`
+--
+
+CREATE TABLE `cardapios` (
+  `id` varchar(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
+  `status` enum('rascunho','publicado') NOT NULL DEFAULT 'rascunho',
+  `holidayWeekdays` text DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
+  `created_by_user_id` varchar(36) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `cities`
 --
 
 CREATE TABLE `cities` (
   `id` varchar(36) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `state` varchar(2) NOT NULL
+  `state` varchar(2) NOT NULL,
+  `cep` varchar(9) NOT NULL,
+  `bairro` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `cities`
 --
 
-INSERT INTO `cities` (`id`, `name`, `state`) VALUES
-('13d8429d-a380-4dca-8ab7-f9fb5b2c5aab', 'Umuarama', 'SP');
+INSERT INTO `cities` (`id`, `name`, `state`, `cep`, `bairro`) VALUES
+('87a6369d-9553-4ef0-8718-5b00be177ef3', 'Umuarama', 'PR', '87504-180', 'Zona V');
 
 -- --------------------------------------------------------
 
@@ -50,27 +70,10 @@ CREATE TABLE `escola_estoque` (
   `id` varchar(36) NOT NULL,
   `quantity` float NOT NULL DEFAULT 0,
   `product_id` varchar(36) DEFAULT NULL,
-  `school_id` varchar(36) DEFAULT NULL
+  `school_id` varchar(36) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `escola_estoque`
---
-
-INSERT INTO `escola_estoque` (`id`, `quantity`, `product_id`, `school_id`) VALUES
-('306f44b1-0e7c-4d27-8229-1a089df924e3', 12, 'b41d1106-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('3d602dcf-74a9-4c12-adb9-11dde644cabf', 78, 'b41d10ac-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('6e306316-c711-484e-9f7c-de4530c01997', 3, 'b41d10e7-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('75976350-6646-44a3-b70d-56388af20d20', 7, 'b41d045c-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('8cf042ca-b0b2-4450-ba3a-181c34d26346', 3, 'b41d1120-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('a8f37b8c-4d0a-455f-a509-f92f20da764c', 27, 'f0fef45e-1c09-461b-a70a-208f0d0bc396', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('aa560452-974d-4472-9ca0-798d22fcd6af', 3, 'b41d1049-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('b0e7b310-7d01-4ebf-8793-a1e4b7ed5f2d', 5, 'b41d0fd7-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('c75a2819-7b2d-4a51-ad37-c5060cbe3307', 3, 'b41d10ca-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('e2320817-09a4-4fd1-bcbd-1707ec908039', 5, '63807e37-f8f7-4b8c-b028-cf257ebdd810', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('ee8d2e79-8b1a-4550-b2e3-53be59eac3bb', 23, 'b41d108c-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('fa303da7-9522-4a04-bce8-f706f070e53a', 10, 'b41d10ac-aae4-11f0-979e-a8a159e69946', '4b5f2e78-d358-47da-bebc-c211430d542b'),
-('fdc7171b-f128-4b9e-9a94-e9c12bfda87b', 3, 'b41d106d-aae4-11f0-979e-a8a159e69946', '2ca88603-3da8-4fc4-a223-988e05dfd902');
 
 -- --------------------------------------------------------
 
@@ -81,26 +84,10 @@ INSERT INTO `escola_estoque` (`id`, `quantity`, `product_id`, `school_id`) VALUE
 CREATE TABLE `prefeitura_estoque` (
   `id` varchar(36) NOT NULL,
   `quantity` float NOT NULL DEFAULT 0,
-  `product_id` varchar(36) DEFAULT NULL
+  `product_id` varchar(36) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `prefeitura_estoque`
---
-
-INSERT INTO `prefeitura_estoque` (`id`, `quantity`, `product_id`) VALUES
-('0c6d3866-13b1-49e4-ae04-99978f536fe2', 1, 'b41d0fd7-aae4-11f0-979e-a8a159e69946'),
-('2d644d05-5ed4-45f9-b734-33ec10c7e5e0', 93, 'b41d1106-aae4-11f0-979e-a8a159e69946'),
-('4bc7e231-111e-4047-9ffd-074c8c68e035', 3, 'b41d045c-aae4-11f0-979e-a8a159e69946'),
-('4c93a2a0-5bf1-4b9e-bfcb-c702c0e20a7f', 5, 'b41d106d-aae4-11f0-979e-a8a159e69946'),
-('8e625c04-16d9-491b-a7cb-c22f23c38820', 12, 'b41d1049-aae4-11f0-979e-a8a159e69946'),
-('a068a835-2fb0-4ada-82a8-9bfe3d1a9362', 118, 'b41d10ac-aae4-11f0-979e-a8a159e69946'),
-('a49da9d0-9ef4-475b-9ebf-622d46ebe8dc', 5, 'b41d10e7-aae4-11f0-979e-a8a159e69946'),
-('a7098f0b-1446-4d53-8d18-0da6ae07fea4', 103, 'b41d10ca-aae4-11f0-979e-a8a159e69946'),
-('dbc2a728-4a18-4ec5-8df5-3374eda02fc3', 1, '63807e37-f8f7-4b8c-b028-cf257ebdd810'),
-('e38b3c24-2564-4355-ae7a-6b47d383f1e9', 15, 'b41d108c-aae4-11f0-979e-a8a159e69946'),
-('fa5dee8a-b08a-4fc3-8f80-e85d6b0563b1', 14, 'b41d1120-aae4-11f0-979e-a8a159e69946'),
-('fca7b4de-877e-4c73-8c99-3ce8e8b1d9d8', 10, 'f0fef45e-1c09-461b-a70a-208f0d0bc396');
 
 -- --------------------------------------------------------
 
@@ -111,29 +98,54 @@ INSERT INTO `prefeitura_estoque` (`id`, `quantity`, `product_id`) VALUES
 CREATE TABLE `products` (
   `id` varchar(36) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `unit` enum('KG','G','L','ML','UN') NOT NULL,
-  `createdAt` datetime(6) NOT NULL DEFAULT current_timestamp(6),
-  `updatedAt` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
-  `minStock` float NOT NULL DEFAULT 0
+  `unit` enum('L','UN') NOT NULL,
+  `min_stock_prefeitura` float NOT NULL DEFAULT 0,
+  `min_stock_escola` float NOT NULL DEFAULT 0,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `unit`, `createdAt`, `updatedAt`, `minStock`) VALUES
-('63807e37-f8f7-4b8c-b028-cf257ebdd810', 'Coca-Cola', 'L', '2025-10-17 00:01:02.921513', '2025-10-17 00:01:02.921513', 4),
-('b41d045c-aae4-11f0-979e-a8a159e69946', 'Arroz Agulhinha Tipo 1', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:05:44.000000', 10),
-('b41d0fd7-aae4-11f0-979e-a8a159e69946', 'Feijão Carioca', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:05:48.000000', 10),
-('b41d1049-aae4-11f0-979e-a8a159e69946', 'Macarrão Espaguete', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:05:53.000000', 10),
-('b41d106d-aae4-11f0-979e-a8a159e69946', 'Óleo de Soja', 'L', '2025-10-16 20:06:09.000000', '2025-10-16 23:05:58.000000', 10),
-('b41d108c-aae4-11f0-979e-a8a159e69946', 'Sal Refinado', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:02.000000', 10),
-('b41d10ac-aae4-11f0-979e-a8a159e69946', 'Açúcar Cristal', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:04.000000', 10),
-('b41d10ca-aae4-11f0-979e-a8a159e69946', 'Peito de Frango Congelado', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:07.000000', 10),
-('b41d10e7-aae4-11f0-979e-a8a159e69946', 'Maçã Fuji', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:10.000000', 10),
-('b41d1106-aae4-11f0-979e-a8a159e69946', 'Banana Nanica', 'KG', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:12.000000', 10),
-('b41d1120-aae4-11f0-979e-a8a159e69946', 'Ovos Brancos', 'UN', '2025-10-16 20:06:09.000000', '2025-10-16 23:06:18.000000', 10),
-('f0fef45e-1c09-461b-a70a-208f0d0bc396', 'Ovo', 'UN', '2025-10-16 23:03:46.968901', '2025-10-16 23:03:46.968901', 20);
+INSERT INTO `products` (`id`, `name`, `unit`, `min_stock_prefeitura`, `min_stock_escola`, `created_at`, `updated_at`) VALUES
+('069656e3-ffe9-4e16-bbd3-21747fc1a182', 'Fubá Mimoso (1Kg)', 'UN', 100, 10, '2025-10-29 16:56:05.145770', '2025-10-29 16:58:22.000000'),
+('32e1075b-7bcf-4add-8a4e-253064392338', 'Óleo de Soja (900ml)', 'UN', 200, 40, '2025-10-29 16:50:54.569925', '2025-10-29 16:57:27.000000'),
+('330179f7-4225-4c53-bcce-fa4e78f33b08', 'Saco de Arroz Agulhinha (10Kg)', 'UN', 500, 10, '2025-10-29 16:45:18.855984', '2025-10-29 16:45:18.855984'),
+('34fcc870-59be-4798-b0ea-d949c63c7ee9', 'Ovos (Dúzia)', 'UN', 500, 10, '2025-10-29 17:00:48.082960', '2025-10-29 17:00:48.082960'),
+('79e1e219-cb47-4f3e-b529-68e2e2a98d45', 'Açúcar Cristal', 'UN', 200, 10, '2025-10-29 16:52:14.751131', '2025-10-29 16:52:14.751131'),
+('980c95b2-9fd8-4645-b848-730a5bf0bfff', 'Leite em Pó Integral (380)', 'UN', 150, 15, '2025-10-29 16:55:46.582786', '2025-10-29 16:58:03.000000'),
+('a6a4dc6c-7168-435c-ae90-fc827f5c5cc9', 'Feijão Carioca (1KG)', 'UN', 400, 40, '2025-10-29 16:49:52.912843', '2025-10-29 16:49:52.912843'),
+('abca8fbe-753a-458a-863b-48fc46c255e4', 'Sal Refinado (1Kg)', 'UN', 500, 10, '2025-10-29 16:51:31.177731', '2025-10-29 16:51:31.177731'),
+('c2566218-7972-4778-bcf3-b5f6e8ed2136', 'Macarrão Parafuso (1Kg)', 'UN', 300, 30, '2025-10-29 16:50:39.318232', '2025-10-29 16:50:39.318232'),
+('e47b6419-3c22-4423-8f44-609431702278', 'Carne Bovina (Acém moído - 1 Kg)', 'UN', 800, 80, '2025-10-29 17:01:20.215322', '2025-10-29 17:01:41.000000'),
+('e9a78193-e02b-48a0-803e-f46c17cbe2f8', 'Peito de Frango (congelado - 1Kg) ', 'UN', 800, 80, '2025-10-29 16:57:10.757939', '2025-10-29 17:01:36.000000');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `refeicao_products`
+--
+
+CREATE TABLE `refeicao_products` (
+  `refeicao_id` varchar(36) NOT NULL,
+  `product_id` varchar(36) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `refeicoes`
+--
+
+CREATE TABLE `refeicoes` (
+  `id` varchar(36) NOT NULL,
+  `diaSemana` enum('segunda','terca','quarta','quinta','sexta') NOT NULL,
+  `tipo` enum('manha','tarde') NOT NULL,
+  `description` text NOT NULL,
+  `cardapioId` varchar(36) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -153,9 +165,7 @@ CREATE TABLE `schools` (
 --
 
 INSERT INTO `schools` (`id`, `name`, `address`, `city_id`) VALUES
-('2ca88603-3da8-4fc4-a223-988e05dfd902', 'Monteiro Lobato', 'Avenida 2', '13d8429d-a380-4dca-8ab7-f9fb5b2c5aab'),
-('4b5f2e78-d358-47da-bebc-c211430d542b', 'Bento', 'Avenida 1', '13d8429d-a380-4dca-8ab7-f9fb5b2c5aab'),
-('7a808ba6-8b3c-4489-864f-78f2ae62dcd8', 'Rachel de Queiroz', 'Rua bem te vi', '13d8429d-a380-4dca-8ab7-f9fb5b2c5aab');
+('430c8fde-ccfb-452a-8570-0c64059b7fdc', 'Escola1', 'Avenida 1', '87a6369d-9553-4ef0-8718-5b00be177ef3');
 
 -- --------------------------------------------------------
 
@@ -171,20 +181,6 @@ CREATE TABLE `solicitacao_items` (
   `solicitacao_id` varchar(36) DEFAULT NULL,
   `product_id` varchar(36) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `solicitacao_items`
---
-
-INSERT INTO `solicitacao_items` (`id`, `quantity_requested`, `quantity_approved`, `quantity_received`, `solicitacao_id`, `product_id`) VALUES
-('0408e941-7b57-4d64-90c6-e9f095250da7', 4, 4, 4, 'da1552b9-035f-4580-aa8a-97688f8a0906', 'b41d10ac-aae4-11f0-979e-a8a159e69946'),
-('0627ed1b-0fa9-428b-ae80-5b99927ec192', 3, 3, 3, 'afa7438e-3282-43db-8bb5-371137884a95', 'b41d10ac-aae4-11f0-979e-a8a159e69946'),
-('0d7b1c67-0dec-43d0-ab9f-c4e9e79e9525', 3, 2, 2, '80f320b2-f181-4601-886f-2a1666cf03c2', 'b41d0fd7-aae4-11f0-979e-a8a159e69946'),
-('0f7c496b-1a31-447a-9c91-93cc61036e68', 5, 5, 5, 'da1552b9-035f-4580-aa8a-97688f8a0906', 'b41d1106-aae4-11f0-979e-a8a159e69946'),
-('92f4e7bd-b0fd-431b-af63-7b0afc1b6d2e', 5, 5, 5, '9a0ab1a2-a05d-43cc-8662-4f8cd5b6c15f', '63807e37-f8f7-4b8c-b028-cf257ebdd810'),
-('c4aff049-7d2f-41c0-bb71-bcd9416cdf6b', 7, 7, 6, '64fb3547-9deb-4f72-aa27-bcdf091fc988', 'b41d10ac-aae4-11f0-979e-a8a159e69946'),
-('f37db393-b271-45b7-ae43-d8d735fd6373', 4, 4, 4, 'afa7438e-3282-43db-8bb5-371137884a95', 'b41d1106-aae4-11f0-979e-a8a159e69946'),
-('f8e1e703-13f1-4166-bf69-44e0953b472f', 100, 2, 2, 'e2d943f9-3bbe-4bcd-994a-de238c9b76a2', 'f0fef45e-1c09-461b-a70a-208f0d0bc396');
 
 -- --------------------------------------------------------
 
@@ -202,18 +198,6 @@ CREATE TABLE `solicitacoes` (
   `school_id` varchar(36) DEFAULT NULL,
   `requester_user_id` varchar(36) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `solicitacoes`
---
-
-INSERT INTO `solicitacoes` (`id`, `created_at`, `updated_at`, `status`, `justificativa`, `observacao_prefeitura`, `school_id`, `requester_user_id`) VALUES
-('64fb3547-9deb-4f72-aa27-bcdf091fc988', '2025-10-19 23:12:56.000777', '2025-10-19 23:13:28.000000', 'recebido', 'teste5', 'aprovado', '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL),
-('80f320b2-f181-4601-886f-2a1666cf03c2', '2025-10-19 23:05:04.533321', '2025-10-19 23:05:43.000000', 'recebido', 'teste3', 'aprovado', '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL),
-('9a0ab1a2-a05d-43cc-8662-4f8cd5b6c15f', '2025-10-19 23:06:11.637838', '2025-10-19 23:12:14.000000', 'recebido', 'teste4', NULL, '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL),
-('afa7438e-3282-43db-8bb5-371137884a95', '2025-10-19 22:59:46.908696', '2025-10-19 23:00:35.000000', 'recebido', 'Teste', NULL, '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL),
-('da1552b9-035f-4580-aa8a-97688f8a0906', '2025-10-19 23:02:40.723813', '2025-10-19 23:03:44.000000', 'recebido', 'teste2', 'aprovado', '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL),
-('e2d943f9-3bbe-4bcd-994a-de238c9b76a2', '2025-10-19 23:37:09.051595', '2025-10-19 23:37:51.000000', 'recebido', 'teste6', NULL, '2ca88603-3da8-4fc4-a223-988e05dfd902', NULL);
 
 -- --------------------------------------------------------
 
@@ -235,23 +219,29 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `profile`, `school_id`) VALUES
-('08084751-bcbf-4705-99d5-e42615e1696b', 'Sandra', 'cozinheira@gema.com', '$2b$10$oSKcjEXak75S31KmMzhzqO5ZWns8SWw2fdZYAQRc8YEiE0ALjUeeO', 'cozinheira', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('5c5df9a8-1c96-4fa1-b572-2268c1c7d79f', 'Wilson', 'Wilson@gema.com', '$2b$10$/XJOKiI7RPGAjvkDKePEI.Iuo6F.N1.IJlnM5i9gfAu9wmu1e/vga', 'escola', '2ca88603-3da8-4fc4-a223-988e05dfd902'),
-('862098b5-c4cd-4879-a8a8-0e6d192e0653', 'Vinicius Chaves', 'vini@gema.com', '$2b$10$o1L0vW9T7Kh0wjlqzgAC4OQVVBr2gf2l4uEFidWzbSK7HPeuieD9O', 'prefeitura', NULL),
-('a2d3b3b8-68f1-4919-8ad1-6b04a5f2ca5b', 'Leonardo', 'leonardo@gema.com', '$2b$10$Wb/xIQMyDa0UwFa8USeRaumuNI.C8GT8J2Qv6lv9nKpBZ36BrHHEW', 'escola', '4b5f2e78-d358-47da-bebc-c211430d542b'),
-('b953a614-1a7f-466f-acec-ddaa5fde74ba', 'Admin Prefeitura', 'prefeitura@gema.com', '$2b$10$.G4EiteU3tPG48cSL0bztuFWdT7j4VQ6.ReHFlem9ZC5JLqmfiwAi', 'prefeitura', NULL),
-('cb58e4c7-1d63-481a-9c96-54390ff43a36', 'Nutricionista', 'nutricionista@gema.com', '$2b$10$ZGZNVTcQo.V7MOnHD2uhE.nPeFKGe0dKNEMLnpe.GT4qxdX6xyNKW', 'nutricionista', NULL);
+('30939156-3375-450f-88b3-c44349ec7fec', 'Gestor Escola 1', 'gestorescola1@gmail.com', '$2b$10$n8CeKfztq/1HBl4uoL3f.uOTtinGOmk1vQirUW39n/9tOD5KRIdaO', 'escola', '430c8fde-ccfb-452a-8570-0c64059b7fdc'),
+('862098b5-c4cd-4879-a8a8-0e6d192e0653', 'Leonardo Chaves', 'leonardo@gema.com', '$2b$10$o1L0vW9T7Kh0wjlqzgAC4OQVVBr2gf2l4uEFidWzbSK7HPeuieD9O', 'prefeitura', NULL),
+('dbde8d5a-4344-402c-b7f3-68626ab62c14', 'Cozinheira Escola 1', 'cozinheiraescola1@gmail.com', '$2b$10$Li1oCrcXAimUgMvTDxsz2OLAHuXSYLm.pq3BGqykuFWQZOhLGnusu', 'cozinheira', '430c8fde-ccfb-452a-8570-0c64059b7fdc'),
+('fe7b56e1-7de8-486a-987b-8d5f0c4abda6', 'Nutricionista', 'nutricionista@gmail.com', '$2b$10$h3ZZ/Nzg6QgRZejiTJxGiOT6Smb0RRw4LC0PegIiBv5L1zxbx3WhK', 'nutricionista', NULL);
 
 --
 -- Índices para tabelas despejadas
 --
 
 --
+-- Índices de tabela `cardapios`
+--
+ALTER TABLE `cardapios`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FK_47f0cdaced75010db0a02d56564` (`created_by_user_id`);
+
+--
 -- Índices de tabela `cities`
 --
 ALTER TABLE `cities`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `IDX_a0ae8d83b7d32359578c486e7f` (`name`);
+  ADD UNIQUE KEY `IDX_a0ae8d83b7d32359578c486e7f` (`name`),
+  ADD UNIQUE KEY `IDX_1b02e4e8e1bfae43deacbad04c` (`cep`);
 
 --
 -- Índices de tabela `escola_estoque`
@@ -274,6 +264,21 @@ ALTER TABLE `prefeitura_estoque`
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `IDX_4c9fb58de893725258746385e1` (`name`);
+
+--
+-- Índices de tabela `refeicao_products`
+--
+ALTER TABLE `refeicao_products`
+  ADD PRIMARY KEY (`refeicao_id`,`product_id`),
+  ADD KEY `IDX_98fee2876918511c6f956ba8c6` (`refeicao_id`),
+  ADD KEY `IDX_553989363ba25c39e9b66de60e` (`product_id`);
+
+--
+-- Índices de tabela `refeicoes`
+--
+ALTER TABLE `refeicoes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `IDX_ff9c814bb9579885aca06c03f9` (`cardapioId`,`diaSemana`,`tipo`);
 
 --
 -- Índices de tabela `schools`
@@ -311,6 +316,12 @@ ALTER TABLE `users`
 --
 
 --
+-- Restrições para tabelas `cardapios`
+--
+ALTER TABLE `cardapios`
+  ADD CONSTRAINT `FK_47f0cdaced75010db0a02d56564` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
+
+--
 -- Restrições para tabelas `escola_estoque`
 --
 ALTER TABLE `escola_estoque`
@@ -322,6 +333,19 @@ ALTER TABLE `escola_estoque`
 --
 ALTER TABLE `prefeitura_estoque`
   ADD CONSTRAINT `FK_dca2a658a8ff8f08bc62592b152` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
+-- Restrições para tabelas `refeicao_products`
+--
+ALTER TABLE `refeicao_products`
+  ADD CONSTRAINT `FK_553989363ba25c39e9b66de60e3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_98fee2876918511c6f956ba8c63` FOREIGN KEY (`refeicao_id`) REFERENCES `refeicoes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Restrições para tabelas `refeicoes`
+--
+ALTER TABLE `refeicoes`
+  ADD CONSTRAINT `FK_f63129842592484fb1e75fe993c` FOREIGN KEY (`cardapioId`) REFERENCES `cardapios` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 --
 -- Restrições para tabelas `schools`
