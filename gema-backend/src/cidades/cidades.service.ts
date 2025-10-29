@@ -1,5 +1,5 @@
 // src/cidades/cidades.service.ts
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'; // <-- ADICIONE BadRequestException AQUI
 import { InjectRepository } from '@nestjs/typeorm';
 import { Escola } from 'src/escolas/entities/escola.entity';
 import { Repository } from 'typeorm';
@@ -16,52 +16,72 @@ export class CidadesService {
     private readonly escolaRepository: Repository<Escola>,
   ) {}
 
-  create(createCidadeDto: CreateCidadeDto): Promise<Cidade> {
-    const cidade = this.cidadeRepository.create(createCidadeDto);
-    return this.cidadeRepository.save(cidade);
+  async create(createCidadeDto: CreateCidadeDto): Promise<Cidade> {
+    const dtoWithNulls = {
+        ...createCidadeDto,
+        bairro: createCidadeDto.bairro || null
+    };
+    const cidade = this.cidadeRepository.create(dtoWithNulls);
+    try {
+      return await this.cidadeRepository.save(cidade);
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+           if (error.message.includes('name')) { throw new ConflictException('Já existe uma cidade com este nome.'); }
+           if (error.message.includes('cep')) { throw new ConflictException('Já existe uma cidade cadastrada com este CEP.'); }
+           throw new ConflictException('Nome da cidade ou CEP já cadastrado.');
+      }
+      throw error;
+    }
   }
 
   findAll(): Promise<Cidade[]> {
-    return this.cidadeRepository.find();
+    return this.cidadeRepository.find({ order: { name: 'ASC' } });
   }
 
-  // GARANTA QUE ESTE MÉTODO RETORNA Promise<Cidade>
   async findOne(id: string): Promise<Cidade> {
     const cidade = await this.cidadeRepository.findOneBy({ id });
-    if (!cidade) {
-      throw new NotFoundException(`Cidade com ID "${id}" não encontrada`);
-    }
+    if (!cidade) { throw new NotFoundException(`Cidade com ID "${id}" não encontrada`); }
     return cidade;
   }
 
   async update(id: string, updateCidadeDto: UpdateCidadeDto): Promise<Cidade> {
+     const dtoWithNulls = { ...updateCidadeDto };
+     if (dtoWithNulls.hasOwnProperty('bairro')) {
+        dtoWithNulls.bairro = dtoWithNulls.bairro || null;
+     }
+     // Validação do CEP obrigatório no update
+     if (dtoWithNulls.hasOwnProperty('cep') && !dtoWithNulls.cep) {
+         throw new BadRequestException('O campo CEP é obrigatório e não pode ser removido.');
+     }
+
     const cidade = await this.cidadeRepository.preload({
       id: id,
-      ...updateCidadeDto,
+      ...dtoWithNulls,
     });
     if (!cidade) {
       throw new NotFoundException(`Cidade com ID "${id}" não encontrada`);
     }
-    return this.cidadeRepository.save(cidade);
+    
+    try {
+      return await this.cidadeRepository.save(cidade);
+    } catch (error) {
+       if (error.code === 'ER_DUP_ENTRY') {
+           if (error.message.includes('name')) { throw new ConflictException('Já existe outra cidade com este nome.'); }
+           if (error.message.includes('cep')) { throw new ConflictException('Já existe outra cidade cadastrada com este CEP.'); }
+           throw new ConflictException('Nome da cidade ou CEP já cadastrado por outra cidade.');
+       }
+      throw error;
+    }
   }
 
-  // MÉTODO REMOVE CORRIGIDO
   async remove(id: string): Promise<void> {
-    // 1. A chamada a this.findOne(id) agora retorna corretamente um objeto Cidade
     const cidade = await this.findOne(id);
-
-    // 2. A variável 'cidade' tem a propriedade 'id', então o erro some
     const escolasVinculadas = await this.escolaRepository.count({
       where: { city: { id: cidade.id } },
     });
-
     if (escolasVinculadas > 0) {
-      throw new ConflictException(
-        `Esta cidade não pode ser excluída pois ${escolasVinculadas} escola(s) estão vinculadas a ela.`,
-      );
+      throw new ConflictException(`Exclusão bloqueada: ${escolasVinculadas} escola(s) vinculada(s).`);
     }
-
-    // 3. O remove agora recebe um objeto Cidade válido
     await this.cidadeRepository.remove(cidade);
   }
 }

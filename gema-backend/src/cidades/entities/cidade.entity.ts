@@ -9,6 +9,14 @@ export class Cidade {
   @Column({ unique: true })
   name: string;
 
-  @Column({ length: 2 }) // Ex: SP, RJ, MG
+  @Column({ length: 2 })
   state: string;
+
+  @Column({ type: 'varchar', length: 9, unique: true }) // CEP é obrigatório e único
+  cep: string;
+
+  // --- NOVA COLUNA BAIRRO ---
+  @Column({ type: 'varchar', nullable: true }) // Bairro é opcional
+  bairro: string | null;
+  // --- FIM NOVA COLUNA ---
 }

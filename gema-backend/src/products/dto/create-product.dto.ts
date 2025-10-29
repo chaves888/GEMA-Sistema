@@ -10,7 +10,13 @@ export class CreateProductDto {
   @IsNotEmpty()
   unit: ProductUnit;
   
-  @IsNumber()
+  // --- MUDANÇA AQUI ---
+  @IsNumber({}, { message: 'Estoque mínimo da prefeitura deve ser um número.'})
   @Min(0)
-  minStock: number;
+  minStockPrefeitura: number;
+
+  @IsNumber({}, { message: 'Estoque mínimo da escola deve ser um número.'})
+  @Min(0)
+  minStockEscola: number;
+  // --- FIM DA MUDANÇA ---
 }

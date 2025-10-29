@@ -155,7 +155,7 @@
             <div class="flex justify-between text-sm font-medium">
               <span>{item.product.name} ({item.product.unit})</span>
               <span class="{item.status === 'Crítico' ? 'text-red-600' : 'text-yellow-600'}">
-                {item.quantity} / min: {item.product.minStock}
+                {item.quantity} / min: {item.minStock}
               </span>
             </div>
             <StatusBar percentage={item.percentage} status={item.status} />
@@ -183,9 +183,9 @@
                   <li class="text-sm">
                     <div class="flex justify-between items-center mb-1">
                       <span>{item.product.name}</span>
-                      <span class="{item.status === 'Crítico' ? 'text-red-600' : 'text-yellow-600'} font-semibold">
-                        {item.quantity} {item.product.unit}
-                      </span>
+                      <span class="{item.status === 'Crítico' ? 'text-red-600' : 'text-yellow-600'} font-semibold"> 
+        {item.quantity} / min: {item.minStock} 
+      </span>
                     </div>
                     <StatusBar percentage={item.percentage} status={item.status} />
                   </li>
@@ -218,9 +218,8 @@
                 <li>
                   <div class="flex justify-between text-sm font-medium">
                     <span>{item.product.name} ({item.product.unit})</span>
-                    <span class="{item.status === 'Crítico' ? 'text-red-600' : 'text-yellow-600'}">
-                      {item.quantity} / min: {item.product.minStock}
-                    </span>
+                    <span class="{item.status === 'Crítico' ? 'text-red-600' : 'text-yellow-600'} font-semibold"> 
+                    {item.quantity} / min: {item.minStock} 
                   </div>
                   <StatusBar percentage={item.percentage} status={item.status} />
                 </li>
@@ -334,17 +333,6 @@
     text-align: left;
     box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.05);
   }
-  .hero h1 {
-    
-    font-size: 2rem;
-    font-weight: 700;
-    color: #2089e6;
-  }
-  .hero p {
-    font-size: 1rem;
-    color: #6b7280;
-    margin-top: .25rem;
-  }
 
   /* ======== MAIN ======== */
   .dashboard-container {
@@ -376,12 +364,7 @@
     color: #6b7280;
     margin-top: 0.25rem;
   }
-  .card .icon {
-    margin: 0 auto 0.75rem auto;
-    color: #64748b;
-    width: 28px;
-    height: 28px;
-  }
+ 
 
   /* ======== PANEL ======== */
   .panel {
@@ -434,6 +417,5 @@
   .animate-fadeIn {
     animation: fadeIn 0.4s ease-out forwards;
   }
-
 
 </style>

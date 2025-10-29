@@ -159,7 +159,7 @@
   async function handleToggleHoliday(dia: string) {
       if (!cardapio || cardapio.status === 'publicado' || isActionLoading || isHolidayLoading[dia]) return;
       const currentlyIsHoliday = cardapio.holidayWeekdays?.includes(dia); const actionText = currentlyIsHoliday ? 'desmarcar como feriado' : 'marcar como FERIADO';
-      if (!confirm(`Tem certeza que deseja ${actionText} para ${dia}? Refeições existentes neste dia serão mantidas, mas não será possível adicionar/editar.`)) return;
+      if (!confirm(`Tem certeza que deseja ${actionText} para ${dia}?`)) return;
       isHolidayLoading = { ...isHolidayLoading, [dia]: true };
       try {
           const updatedCardapio = await api.patch(`cardapios/${cardapio.id}/holiday`, { diaSemana: dia, isHoliday: !currentlyIsHoliday });
@@ -169,7 +169,7 @@
   }
   async function handlePublish() {
       if (!cardapio || isActionLoading || cardapio.status === 'publicado' || !canPublish) return;
-      if (!confirm('Tem certeza que deseja PUBLICAR este cardápio? Após a publicação, ele não poderá mais ser editado ou excluído e os feriados não poderão ser alterados.')) return;
+      if (!confirm('Tem certeza que deseja PUBLICAR este cardápio? Após a publicação, ele não poderá mais ser editado e os feriados não poderão ser alterados.')) return;
       isActionLoading = true;
       try {
           const publishedCardapio = await api.patch(`cardapios/${cardapio.id}/publish`, {});

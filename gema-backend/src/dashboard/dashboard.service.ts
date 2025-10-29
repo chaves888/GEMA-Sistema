@@ -11,18 +11,21 @@ import { User, UserProfile } from 'src/users/entities/user.entity';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { format, parseISO } from 'date-fns';
 
-// --- Interface Added Here ---
+// --- Interface ATUALIZADA ---
+// A estrutura interna dos itens críticos agora vem do EstoqueService
 interface SchoolStockSummary {
   schoolId: string;
   schoolName: string;
-  criticalItems: Array<{
+  criticalItems: Array<{ // Estrutura retornada por EstoqueService
     product: Product;
     quantity: number;
-    minStock: number;
+    minStock: number; // Este minStock agora é o product.minStockEscola
     status: string;
     percentage: number;
   }>;
 }
+// --- FIM ATUALIZAÇÃO ---
+
 
 @Injectable()
 export class DashboardService {
@@ -52,6 +55,11 @@ export class DashboardService {
     }
   }
 
+  // --- Lógica de getPrefeituraData e getEscolaData não precisa mudar ---
+  // Elas já dependem da resposta do EstoqueService, que nós acabamos de corrigir.
+  // A estrutura (status, percentage, minStock) retornada pelo EstoqueService continua a mesma,
+  // apenas o *valor* de minStock e o cálculo do status mudaram internamente no EstoqueService.
+
   private async getPrefeituraData() {
     const totalUsers = await this.userRepository.count();
     const totalEscolas = await this.escolaRepository.count();
@@ -65,19 +73,18 @@ export class DashboardService {
     );
 
     const allEscolas = await this.escolaRepository.find({ order: { name: 'ASC' } });
-    // --- Annotation Applied Here ---
-    const schoolStockSummaries: SchoolStockSummary[] = []; // Explicitly typed array
+    const schoolStockSummaries: SchoolStockSummary[] = [];
 
     for (const escola of allEscolas) {
       const fullStockEscola = await this.estoqueService.getEscolaEstoque(escola.id);
       const criticalItemsEscola = fullStockEscola
         .filter(item => item.status === 'Crítico' || item.status === 'Médio')
-        .slice(0, 6);
+        .slice(0, 15);
 
-      schoolStockSummaries.push({ // This push is now valid
+      schoolStockSummaries.push({
         schoolId: escola.id,
         schoolName: escola.name,
-        criticalItems: criticalItemsEscola,
+        criticalItems: criticalItemsEscola, // Esta estrutura agora bate com a Interface
       });
     }
 
@@ -87,20 +94,23 @@ export class DashboardService {
         schools: totalEscolas,
         pendingSolicitacoes: pendingSolicitacoes,
       },
-      criticalStockPrefeitura: criticalStockPrefeitura.slice(0, 5),
+      criticalStockPrefeitura: criticalStockPrefeitura.slice(0, 15),
       schoolStocks: schoolStockSummaries,
     };
   }
 
-  // --- getEscolaData, getNutricionistaData, getCozinheiraData remain the same ---
+
   private async getEscolaData(user: User) {
     if (!user.school?.id) return { error: 'Usuário não associado a uma escola.' };
     const schoolId = user.school.id;
     const recentSolicitacoes = await this.solicitacaoRepository.find({
       where: { school: { id: schoolId } }, order: { createdAt: 'DESC' }, take: 5, select: ['id', 'createdAt', 'status'],
     });
+    
+    // EstoqueService agora usa product.minStockEscola para calcular status/percentage
     const fullStock = await this.estoqueService.getEscolaEstoque(schoolId);
     const criticalStockItems = fullStock.filter(item => item.status === 'Crítico' || item.status === 'Médio');
+
     const today = format(new Date(), 'yyyy-MM-dd');
     const currentCardapio = await this.cardapioRepository.findOne({
       where: { status: CardapioStatus.PUBLICADO, startDate: LessThanOrEqual(today), endDate: MoreThanOrEqual(today), },
@@ -108,6 +118,7 @@ export class DashboardService {
     });
     return { recentSolicitacoes, criticalStock: criticalStockItems.slice(0, 5), currentCardapio, };
   }
+
   private async getNutricionistaData() {
     const draftCardapios = await this.cardapioRepository.find({
       where: { status: CardapioStatus.RASCUNHO }, order: { createdAt: 'DESC' }, take: 5, select: ['id', 'name', 'startDate', 'endDate', 'createdAt'],

@@ -5,7 +5,9 @@ export class AjustarEstoqueDto {
   @IsNotEmpty()
   productId: string;
 
-  @IsNumber()
-  @Min(0)
+  @IsNumber({}, { message: 'Quantidade deve ser um número.'})
+  @Min(0, { message: 'Quantidade não pode ser negativa.' })
   quantity: number;
+
+  // O campo 'minStock' opcional foi removido
 }

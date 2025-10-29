@@ -1,9 +1,9 @@
-import { 
-  Column, 
-  CreateDateColumn, 
-  Entity, 
-  PrimaryGeneratedColumn, 
-  UpdateDateColumn 
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
 } from 'typeorm';
 
 export enum ProductUnit {
@@ -28,13 +28,19 @@ export class Product {
   })
   unit: ProductUnit;
 
-  // O Estoque Mínimo volta para cá
-  @Column({ type: 'float', default: 0 })
-  minStock: number;
+  // --- MUDANÇA AQUI ---
+  // Removemos o minStock único
 
-  @CreateDateColumn()
+  @Column({ type: 'float', default: 0, name: 'min_stock_prefeitura' })
+  minStockPrefeitura: number;
+
+  @Column({ type: 'float', default: 0, name: 'min_stock_escola' })
+  minStockEscola: number;
+  // --- FIM DA MUDANÇA ---
+
+  @CreateDateColumn({ name: 'created_at'})
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at'})
   updatedAt: Date;
 }

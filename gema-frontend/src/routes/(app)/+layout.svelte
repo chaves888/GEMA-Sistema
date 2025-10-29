@@ -18,10 +18,12 @@
   });
 
   function handleLogout() {
-    localStorage.removeItem('gema_token');
-    session.set(null);
-    goto('/');
-  }
+  localStorage.removeItem('gema_token');
+  session.set(null);
+
+
+  window.location.href = '/';
+}
 
   // Otimização de Reatividade: Mantida
   $: pathname = $page.url.pathname;
