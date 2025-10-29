@@ -118,21 +118,6 @@
 </aside>
 
   <div class="flex-1 flex flex-col overflow-hidden">
-    <header class="h-16 bg-white shadow flex justify-between items-center px-6 flex-shrink-0">
-      <h1 class="text-lg font-semibold text-gray-800 capitalize">
-        {#if activeDashboard}Dashboard
-        {:else if activeUsuarios}Usuários
-        {:else if activeCidades}Cidades
-        {:else if activeEscolas}Escolas
-        {:else if activeProdutos}Produtos
-        {:else if activeEstoque}Estoque
-        {:else if activeSolicitacoes}Solicitações
-        {:else if activeCardapios}Cardápios
-        {:else}GEMA
-        {/if}
-      </h1>
-    </header>
-
     <main class="flex-1 p-6 overflow-y-auto bg-gray-50">
       <slot />
     </main>

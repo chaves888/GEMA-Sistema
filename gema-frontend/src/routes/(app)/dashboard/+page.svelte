@@ -4,7 +4,7 @@
   import { session } from '$lib/sessionStore';
   import { format, parseISO, getDay } from 'date-fns';
   import { ptBR } from 'date-fns/locale';
-  import { AlertTriangle, ListChecks, FileText, ChefHat, Users, Building2 } from 'lucide-svelte';
+  import { AlertTriangle, ListChecks, FileText, ChefHat, Users, Building2, School } from 'lucide-svelte';
   import StatusBar from '$lib/components/StatusBar.svelte';
   import type { Refeicao } from '$lib/types';
 
@@ -76,21 +76,36 @@
 </script>
 
 <!-- HERO HEADER -->
-<div class="hero border-b border-gray-200 pb-4 mb-6">
-  {#if $session.profile === 'prefeitura'}
-    <h1 class="text-blue-600 text-2xl font-bold">Dashboard da Prefeitura</h1>
-    <p class="text-gray-500 mt-1 text-sm">Visão geral do sistema municipal</p>
-  {:else if $session.profile === 'escola'}
-    <h1 class="text-blue-600 text-2xl font-bold">Dashboard da Escola</h1>
-    <p class="text-gray-500 mt-1 text-sm">{$session.school?.name}</p>
-  {:else if $session.profile === 'nutricionista'}
-    <h1 class="text-blue-600 text-2xl font-bold">Dashboard da Nutricionista</h1>
-    <p class="text-gray-500 mt-1 text-sm">Gerencie cardápios e rascunhos</p>
-  {:else if $session.profile === 'cozinheira'}
-    <h1 class="text-blue-600 text-2xl font-bold">🍽️ Bom dia, Cozinheira!</h1>
-    <p class="text-gray-500 mt-1 text-sm">Escola: {$session.school?.name}</p> 
-  {/if}
-</div>
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
+
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+    
+    <div>
+      {#if $session.profile === 'prefeitura'}
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+          Dashboard da Prefeitura
+        </h1>
+        <p class="text-gray-600 mt-1 text-sm">Visão geral do sistema municipal</p>
+      {:else if $session.profile === 'escola'}
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+          Dashboard da Escola
+        </h1>
+        <p class="text-gray-600 mt-1 text-sm">{$session.school?.name}</p>
+      {:else if $session.profile === 'nutricionista'}
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+          Dashboard da Nutricionista
+        </h1>
+        <p class="text-gray-600 mt-1 text-sm">Gerencie cardápios e rascunhos</p>
+      {:else if $session.profile === 'cozinheira'}
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+          Bom dia, Cozinheira!
+        </h1>
+        <p class="text-gray-600 mt-1 text-sm">Escola: {$session.school?.name}</p>
+      {/if}
+    </div>
+    
+    </div>
+    
 
 <!-- MAIN CONTENT -->
 <div class="dashboard-container animate-fadeIn">
@@ -105,24 +120,28 @@
 
     <!-- PREFEITURA -->
     {#if $session.profile === 'prefeitura'}
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-    <div class="card">
-      <Users class="icon" />
-      <h2>{dashboardData.stats?.users || 0}</h2>
-      <p>Usuários</p>
-    </div>
-    <div class="card">
-      <Building2 class="icon" />
-      <h2>{dashboardData.stats?.schools || 0}</h2>
-      <p>Escolas</p>
-    </div>
-    <div class="card">
-      <ListChecks class="icon text-yellow-500" />
-      <h2>{dashboardData.stats?.pendingSolicitacoes || 0}</h2>
-      <p>Solicitações Pendentes</p>
-    </div>
+   <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+  <!-- Usuários -->
+  <div class="card bg-blue-100 text-blue-800">
+    <Users class="icon text-blue-600" />
+    <h2>{dashboardData.stats?.users || 0}</h2>
+    <p>Usuários</p>
   </div>
 
+  <!-- Escolas -->
+  <div class="card bg-green-100 text-green-800">
+    <School class="icon text-green-600" />
+    <h2>{dashboardData.stats?.schools || 0}</h2>
+    <p>Escolas</p>
+  </div>
+
+  <!-- Solicitações Pendentes -->
+  <div class="card bg-yellow-100 text-yellow-800">
+    <ListChecks class="icon text-yellow-600" />
+    <h2>{dashboardData.stats?.pendingSolicitacoes || 0}</h2>
+    <p>Solicitações Pendentes</p>
+  </div>
+</div>
   <!-- PAINEL ESTOQUE CENTRAL -->
   {#if dashboardData.criticalStockPrefeitura?.length > 0}
     <div class="panel mb-8">
@@ -151,8 +170,8 @@
   {#if dashboardData.schoolStocks?.length > 0}
     <div class="panel">
       <div class="panel-header">
-        <Building2 class="w-5 h-5 text-primary-600" />
-        <h3>🏫 Estoque das Escolas</h3>
+        <School class="w-5 h-5 text-primary-600" />
+        <h3>Estoque das Escolas</h3>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
         {#each dashboardData.schoolStocks as schoolStock}
@@ -303,6 +322,7 @@
 
   {/if}
 </div>
+</div>
 
 <style>
   /* ======== HERO ======== */
@@ -414,4 +434,6 @@
   .animate-fadeIn {
     animation: fadeIn 0.4s ease-out forwards;
   }
+
+
 </style>

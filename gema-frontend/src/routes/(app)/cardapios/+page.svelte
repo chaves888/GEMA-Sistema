@@ -72,8 +72,8 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-6 space-y-8 animate-fadeIn">
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
+	<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
     <div> <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent"> Cardápios Semanais </h1> {#if $session?.profile === 'nutricionista'} <p class="text-gray-600 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p> {:else} <p class="text-gray-600 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p> {/if} </div>
     {#if $session?.profile === 'nutricionista'} <button on:click={handleNovoCardapio} disabled={isActionLoading} class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50"> <CalendarPlus class="w-5 h-5" /> Novo Cardápio </button> {/if}
   </div>
