@@ -46,10 +46,7 @@
         id="unit" required bind:value={product.unit}
         class="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-300 transition-all shadow-sm"
       >
-        <option value="KG">Quilograma (KG)</option>
-        <option value="G">Grama (G)</option>
         <option value="L">Litro (L)</option>
-        <option value="ML">Mililitro (ML)</option>
         <option value="UN">Unidade (UN)</option>
       </select>
     </div>

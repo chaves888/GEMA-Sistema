@@ -7,10 +7,7 @@ import {
 } from 'typeorm';
 
 export enum ProductUnit {
-  KILOGRAMA = 'KG',
-  GRAMA = 'G',
   LITRO = 'L',
-  MILILITRO = 'ML',
   UNIDADE = 'UN',
 }
 
