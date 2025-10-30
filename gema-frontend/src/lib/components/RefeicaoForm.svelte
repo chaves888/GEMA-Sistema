@@ -5,7 +5,7 @@
   import { Search } from 'lucide-svelte';
 
   export let cardapioId: string;
-  export let diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta';
+  export let diaSemana: 'segunda' | 'terça' | 'quarta' | 'quinta' | 'sexta';
   export let tipo: 'manha' | 'tarde';
   export let refeicao: Refeicao | null = null;
 
@@ -91,7 +91,7 @@
       {refeicao ? 'Editar Refeição' : 'Adicionar Refeição'}
     </h2>
     <p class="text-gray-500 capitalize mt-1">
-      {diaSemana} - {tipo === 'manha' ? 'Manhã (10h)' : 'Tarde (15h)'}
+      {diaSemana} - {tipo === 'manha' ? 'Manhã' : 'Tarde'}
     </p>
   </div>
 

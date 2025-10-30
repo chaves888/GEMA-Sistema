@@ -40,7 +40,7 @@ export class Cardapio {
 
   // --- CAMPO ATUALIZADO ---
   @Column('simple-array', { nullable: true }) // Armazena como texto, permite NULL. Sem valor padrão explícito.
-  holidayWeekdays: DiaSemana[]; // Ex: ['terca', 'quinta']
+  holidayWeekdays: DiaSemana[]; // Ex: ['terça', 'quinta']
   // --- FIM ATUALIZAÇÃO ---
 
   @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true })

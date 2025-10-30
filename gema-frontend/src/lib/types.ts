@@ -45,7 +45,7 @@ type RefeicaoProductItem = {
 // A Refeição (Manhã ou Tarde)
 export type Refeicao = {
   id: string;
-  diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta';
+  diaSemana: 'segunda' | 'terça' | 'quarta' | 'quinta' | 'sexta';
   tipo: 'manha' | 'tarde';
   description: string; // "Nome do prato"
   products: RefeicaoProductItem[]; // Lista de produtos

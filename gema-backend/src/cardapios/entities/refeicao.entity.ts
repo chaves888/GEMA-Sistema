@@ -12,7 +12,7 @@ import { Cardapio } from './cardapio.entity';
 
 export enum DiaSemana {
   SEGUNDA = 'segunda',
-  TERCA = 'terca',
+  TERCA = 'terça',
   QUARTA = 'quarta',
   QUINTA = 'quinta',
   SEXTA = 'sexta',

@@ -6,17 +6,18 @@
 
   // --- ATUALIZAR TIPO Escola (e Cidade aninhada) ---
   type Escola = {
-    id: string;
-    name: string;
-    address: string | null; // Endereço da escola pode ser nulo
-    city: {
-      id: string;
-      name: string;
-      state: string;
-      cep: string; // CEP da cidade
-      bairro?: string | null; // Bairro da cidade
-    };
-  };
+    id: string;
+    name: string;
+    address: string | null; 
+    numero: string | null; // <-- ADICIONADO
+    city: {
+      id: string;
+      name: string;
+      state: string;
+      cep: string; 
+      bairro?: string | null; 
+    };
+  };
   // --- FIM ATUALIZAÇÃO ---
 
   let escolas: Escola[] = [];
@@ -26,7 +27,13 @@
   let showModal = false;
   let isEditing = false;
   // Tipo para o formulário (não muda)
-  let currentEscola: { id?: string; name: string; address: string; cityId: string } = { name: '', address: '', cityId: '' };
+  let currentEscola: { 
+  id?: string; 
+  name: string; 
+  address: string; 
+  numero?: string | null; // <-- ADICIONADO
+  cityId: string 
+} = { name: '', address: '', numero: '', cityId: '' };
 
   onMount(async () => {
     try {
@@ -42,18 +49,19 @@
 
   function openAddModal() {
     isEditing = false;
-    currentEscola = { name: '', address: '', cityId: '' };
+    currentEscola = { name: '', address: '', numero: '', cityId: '' };
     showModal = true;
   }
 
   function openEditModal(escola: Escola) {
     isEditing = true;
     currentEscola = {
-      id: escola.id,
-      name: escola.name,
-      address: escola.address || '', // Garante string vazia se for null
-      cityId: escola.city.id,
-    };
+      id: escola.id,
+      name: escola.name,
+      address: escola.address || '', 
+      numero: escola.numero || '', // <-- ADICIONADO
+      cityId: escola.city.id,
+    };
     showModal = true;
   }
 
@@ -129,6 +137,7 @@
 					<tr>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Endereço</th>
+						<th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">N°</th>
 						<th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cidade</th>
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bairro</th>
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">CEP</th>
@@ -140,6 +149,7 @@
 						<tr class="hover:bg-primary-50/40 transition-all duration-150">
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">{escola.name}</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{escola.address || '—'}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{escola.numero || '—'}</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{escola.city.name} - {escola.city.state}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{escola.city.bairro || '—'}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatCep(escola.city.cep)}</td>

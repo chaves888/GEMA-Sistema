@@ -17,9 +17,9 @@
   type Cardapio = CardapioType & { holidayWeekdays?: string[] };
 
   const diaSemanaMap: { [key: number]: string } = {
-    1: 'segunda', 2: 'terca', 3: 'quarta', 4: 'quinta', 5: 'sexta',
+    1: 'segunda', 2: 'terça', 3: 'quarta', 4: 'quinta', 5: 'sexta',
   };
-  const DIAS_SEMANA_ORDEM = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
+  const DIAS_SEMANA_ORDEM = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
 
   let cardapio: Cardapio | null = null;
   let isLoading = true;
@@ -38,7 +38,7 @@
   let showRefeicaoModal = false;
   // --- TYPE DEFINITION CORRIGIDA AQUI ---
   let modalData: {
-    diaSemana: 'segunda' | 'terca' | 'quarta' | 'quinta' | 'sexta'; // Tipo específico
+    diaSemana: 'segunda' | 'terça' | 'quarta' | 'quinta' | 'sexta'; // Tipo específico
     tipo: 'manha' | 'tarde'; // Tipo específico
     refeicao: Refeicao | null;
   } | null = null;
@@ -203,26 +203,26 @@
               </div>
 
               <div class="flex flex-col divide-y flex-1">
-                  <div class="flex-1 p-5 space-y-3 min-h-[150px] flex flex-col">
-                      <h4 class="font-semibold text-primary-700 flex items-center gap-1">☀️ Manhã (10h)</h4>
+                  <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
+                      <h4 class="font-semibold text-primary-700 flex items-center gap-1">☀️ Manhã</h4>
                       {#if refeicoesGrid[dia]?.manha && !isHoliday}
                         {@const refeicao = refeicoesGrid[dia]['manha']}
                         <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1">
-                          <p class="font-medium italic text-gray-800 mb-1">“{refeicao.description}”</p>
-                          <ul class="list-disc list-inside text-xs text-gray-600 space-y-1"> {#each refeicao.products as item (item.id)}<li>{item.name}</li>{/each} </ul>
+                          <p class="text-base font-medium italic text-gray-800 mb-1">“{refeicao.description}”</p>
+                          <ul class="list-disc list-inside text-sm text-gray-600 space-y-1"> {#each refeicao.products as item (item.id)}<li>{item.name}</li>{/each} </ul>
                           {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'} <div class="flex gap-3 mt-3 pt-2 border-t border-gray-200"> <button on:click={() => handleEditRefeicao(refeicao)} class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50" disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}>Editar</button> <button on:click={() => handleDeleteRefeicao(refeicao)} class="text-xs text-red-500 hover:underline font-medium disabled:opacity-50" disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}> {#if isRefeicaoActionLoading[refeicao.id]}...{:else}Remover{/if} </button> </div> {/if}
                         </div>
                       {:else if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho' && !isHoliday} <button on:click={() => handleAddRefeicao(dia, 'manha')} disabled={isActionLoading || isHoliday} class="w-full flex-1 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-3 transition disabled:opacity-50 disabled:cursor-not-allowed"> <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar </button>
                       {:else if !isHoliday} <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">(Sem refeição)</p>
                       {:else} <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">(Feriado)</p> {/if}
                   </div>
-                  <div class="flex-1 p-5 space-y-3 min-h-[150px] flex flex-col">
+                  <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
                     <h4 class="font-semibold text-primary-700 flex items-center gap-1">🌇 Tarde (15h)</h4>
                     {#if refeicoesGrid[dia]?.tarde && !isHoliday}
                         {@const refeicao = refeicoesGrid[dia]['tarde']}
                         <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1">
-                           <p class="font-medium italic text-gray-800 mb-1">“{refeicao.description}”</p>
-                           <ul class="list-disc list-inside text-xs text-gray-600 space-y-1"> {#each refeicao.products as item (item.id)}<li>{item.name}</li>{/each} </ul>
+                           <p class="text-base font-medium italic text-gray-800 mb-1">“{refeicao.description}”</p>
+                           <ul class="list-disc list-inside text-sm text-gray-600 space-y-1"> {#each refeicao.products as item (item.id)}<li>{item.name}</li>{/each} </ul>
                            {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'} <div class="flex gap-3 mt-3 pt-2 border-t border-gray-200"> <button on:click={() => handleEditRefeicao(refeicao)} class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50" disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}>Editar</button> <button on:click={() => handleDeleteRefeicao(refeicao)} class="text-xs text-red-500 hover:underline font-medium disabled:opacity-50" disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}> {#if isRefeicaoActionLoading[refeicao.id]}...{:else}Remover{/if} </button> </div> {/if}
                         </div>
                     {:else if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho' && !isHoliday} <button on:click={() => handleAddRefeicao(dia, 'tarde')} disabled={isActionLoading || isHoliday} class="w-full flex-1 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-3 transition disabled:opacity-50 disabled:cursor-not-allowed"> <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar </button>
