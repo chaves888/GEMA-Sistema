@@ -12,9 +12,35 @@ import { EstoqueModule } from './estoque/estoque.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 import { CardapiosModule } from './cardapios/cardapios.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import * as path from 'path';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com', // Ex: 'smtp.gmail.com'
+        port: 465,
+        secure: true, // true para 465, false para outras portas
+        auth: {
+          user: 'chavitista@gmail.com', // <-- COLOQUE SEU E-MAIL (ou process.env.MAIL_USER)
+          pass: 'zqjmugkvofstqgez', // <-- COLOQUE SUA SENHA (ou process.env.MAIL_PASS)
+        },
+      },
+      defaults: {
+        from: '"GEMA Sistema" <nao-responda@gema.com>',
+      },
+      // (Opcional) Se quiser usar templates HTML para os e-mails
+      template: {
+        dir: path.join(__dirname, '..', 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
+
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -25,6 +51,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // IMPORTANTE: Em desenvolvimento, cria as tabelas automaticamente
     }),
+
+
     UsersModule,
     AuthModule,
     ProductsModule,
@@ -35,7 +63,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
     CardapiosModule,
     DashboardModule,
   ],
+  
   controllers: [AppController],
   providers: [AppService],
+
 })
 export class AppModule {}
