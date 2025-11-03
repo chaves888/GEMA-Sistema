@@ -88,7 +88,7 @@
 </script>
 
 <main class="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-6">
-  <div class="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-lg p-8 shadow-2xl border border-white/20 text-white animate-fade-in">
+  <div class="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-lg p-6 shadow-2xl border border-white/20 text-white animate-fade-in">
     
         <div class="text-center space-y-2">
       <img src={GemaLogo} alt="Logo GEMA" class="mx-auto h-28 w-auto mb-0 drop-shadow-md" />
@@ -102,7 +102,7 @@
     </div>
 
     {#if view === 'login'}
-      <form class="space-y-6 mt-8" on:submit|preventDefault={handleLogin}>
+      <form class="space-y-4 mt-6" on:submit|preventDefault={handleLogin}>
         <div>
           <input
             id="email"
@@ -163,7 +163,7 @@
       
     {:else}
       
-      <form class="space-y-6 mt-8" on:submit|preventDefault={handleForgotPassword}>
+      <form class="space-y-4 mt-6" on:submit|preventDefault={handleForgotPassword}>
         <div>
           <input
             id="email-forgot"

@@ -109,7 +109,7 @@ export class AuthService {
 
     // 10. Atualiza o usuário no banco
     try {
-      await this.usersService.update(payload.sub, { password: hashedPassword });
+      await this.usersService.update(payload.sub, { password: newPass });
     } catch (error) {
       // Trata caso o usuário tenha sido deletado enquanto o token era válido
       if (error instanceof NotFoundException) {
