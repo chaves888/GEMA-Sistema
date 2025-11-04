@@ -47,7 +47,7 @@ export class AuthService {
     if (user) {
       // 4. Cria um token JWT *específico* para reset, com validade curta (ex: 15 minutos)
       const payload = { sub: user.id, type: 'reset' };
-      const token = this.jwtService.sign(payload, { expiresIn: '15m' });
+      const token = this.jwtService.sign(payload, { expiresIn: '1m' });
 
       // 5. Define a URL do frontend (ajuste a porta se necessário)
       const resetUrl = `http://localhost:5173/resetar-senha/${token}`;
