@@ -16,7 +16,7 @@
   let refeicaoTardeHoje: Refeicao | null | undefined = undefined;
   let diaSemanaHoje: string | null = null;
 
-  const dayNumToStringMap: { [key: number]: string } = { 1: 'segunda', 2: 'terca', 3: 'quarta', 4: 'quinta', 5: 'sexta' };
+  const dayNumToStringMap: { [key: number]: string } = { 1: 'segunda', 2: 'terça', 3: 'quarta', 4: 'quinta', 5: 'sexta' };
 
   $: if ($session) loadDashboardData();
 
@@ -87,10 +87,8 @@
         </h1>
         <p class="text-gray-600 mt-1 text-sm">Visão geral do sistema municipal</p>
       {:else if $session.profile === 'escola'}
-        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-          Dashboard da Escola
-        </h1>
-        <p class="text-gray-600 mt-1 text-sm">{$session.school?.name}</p>
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"> Dashboard da Escola: {$session.school?.name || ''}</h1>
+        <p class="text-gray-600 mt-1 text-sm">Visão geral do sistema escolar</p>
       {:else if $session.profile === 'nutricionista'}
         <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
           Dashboard da Nutricionista

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Loader2 } from 'lucide-svelte';
+    import { toast } from '$lib/toast';
 
   export let cidade: {
       id?: string;
@@ -75,14 +76,14 @@
         if (cleanedCep.length === 8) {
             cidade.cep = `${cleanedCep.slice(0, 5)}-${cleanedCep.slice(5)}`;
         } else {
-             alert("Erro: CEP inválido. Deve conter 8 dígitos."); return;
+             toast.error("Erro: CEP inválido. Deve conter 8 dígitos."); return;
         }
     } else {
-        alert("Erro: O campo CEP é obrigatório."); return;
+        toast.error("Erro: O campo CEP é obrigatório."); return;
     }
     
-    if (!cidade.name) { alert("Erro: O Nome da Cidade é obrigatório."); return; }
-    if (!cidade.state) { alert("Erro: O Estado (UF) é obrigatório."); return; }
+    if (!cidade.name) { toast.error("Erro: O Nome da Cidade é obrigatório."); return; }
+    if (!cidade.state) { toast.error("Erro: O Estado (UF) é obrigatório."); return; }
 
     // Envia o bairro como null se estiver vazio
     cidade.bairro = cidade.bairro || null;

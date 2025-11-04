@@ -1,87 +1,102 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import * as api from '$lib/api';
-  import { session } from '$lib/sessionStore';
-  import Modal from '$lib/components/Modal.svelte';
-  import AjusteEstoqueForm from '$lib/components/AjusteEstoqueForm.svelte';
-  import StatusBar from '$lib/components/StatusBar.svelte';
+	import { onMount } from 'svelte';
+	import * as api from '$lib/api';
+	import { session } from '$lib/sessionStore';
+	import Modal from '$lib/components/Modal.svelte';
+	import AjusteEstoqueForm from '$lib/components/AjusteEstoqueForm.svelte';
+	import StatusBar from '$lib/components/StatusBar.svelte';
 
-  // --- TIPO EstoqueItem ATUALIZADO ---
-  type EstoqueItem = {
-    quantity: number;
-    status: 'Crítico' | 'Médio' | 'Bom' | 'N/A';
-    percentage: number;
-    minStock: number; // <-- minStock agora está aqui
-    product: {
-      id: string;
-      name: string;
-      unit: string;
-      // minStock não está mais aqui dentro
-    };
-  };
-  // --- FIM ATUALIZAÇÃO ---
+	// 1. IMPORTAR O TOAST
+	import { toast } from '$lib/toast';
 
-  let estoque: EstoqueItem[] = [];
-  let isLoading = true;
-  let isRefreshing = false; // Para feedback visual
-  let error: string | null = null;
+	// --- TIPO EstoqueItem ATUALIZADO ---
+	type EstoqueItem = {
+		quantity: number;
+		status: 'Crítico' | 'Médio' | 'Bom' | 'N/A';
+		percentage: number;
+		minStock: number; // <-- minStock agora está aqui
+		product: {
+			id: string;
+			name: string;
+			unit: string;
+			// minStock não está mais aqui dentro
+		};
+	};
+	// --- FIM ATUALIZAÇÃO ---
 
-  let showModal = false;
-  let currentItem: EstoqueItem | null = null; // Usa o tipo atualizado
+	let estoque: EstoqueItem[] = [];
+	let isLoading = true;
+	let isRefreshing = false; // Para feedback visual
+	let error: string | null = null;
 
-  $: if ($session) {
-    loadStock($session.profile);
-  }
+	let showModal = false;
+	let currentItem: EstoqueItem | null = null; // Usa o tipo atualizado
 
-  async function loadStock(userProfile: string) {
-    if (!isLoading) isRefreshing = true;
-    error = null;
-    try {
-      // API retorna a estrutura correta com minStock no nível superior
-      estoque = await api.get(userProfile === 'prefeitura' ? 'estoque/prefeitura' : 'estoque/escola');
-    } catch (e: any) { // Adicionado tipo 'any' para 'e'
-      error = e?.message || '❌ Não foi possível carregar o estoque.'; // Mensagem de erro atualizada
-      console.error(e);
-    } finally {
-      isLoading = false;
-      isRefreshing = false;
-    }
-  }
+	$: if ($session) {
+		loadStock($session.profile);
+	}
 
-  function openAjusteModal(item: EstoqueItem) {
-    currentItem = { ...item }; // Guarda o item completo
-    showModal = true;
-  }
+	async function loadStock(userProfile: string) {
+		if (!isLoading) isRefreshing = true;
+		error = null;
+		try {
+			// API retorna a estrutura correta com minStock no nível superior
+			estoque = await api.get(userProfile === 'prefeitura' ? 'estoque/prefeitura' : 'estoque/escola');
+		} catch (e: any) {
+			error = e?.message || '❌ Não foi possível carregar o estoque.';
+			console.error(e);
+			
+			// 2. SUBSTITUIR ALERT POR TOAST (no carregamento)
+			if (error) {
+				toast.error(error);
+			}
 
-  async function handleSave(event: any) {
-    const { productId, quantity } = event.detail; // Form só envia isso
-    try {
-      let updatedItem =
-        $session.profile === 'prefeitura'
-          ? await api.patch('estoque/prefeitura', { productId, quantity })
-          : await api.patch('estoque/escola', { productId, quantity });
+		} finally {
+			isLoading = false;
+			isRefreshing = false;
+		}
+	}
 
-      const index = estoque.findIndex(i => i.product.id === productId);
-      if (index !== -1) estoque[index] = updatedItem; // Substitui pelo item formatado da API
+	function openAjusteModal(item: EstoqueItem) {
+		currentItem = { ...item }; // Guarda o item completo
+		showModal = true;
+	}
 
-      // Reordena
-      estoque.sort((a, b) => {
-          const statusOrder = { 'Crítico': 1, 'Médio': 2, 'Bom': 3, 'N/A': 4 };
-          const orderA = statusOrder[a.status];
-          const orderB = statusOrder[b.status];
-          if (orderA !== orderB) return orderA - orderB;
-          return a.percentage - b.percentage;
-      });
-      estoque = [...estoque]; // Força reatividade
-      showModal = false;
-      currentItem = null; // Limpa item selecionado
-    } catch (e: any) { // Adicionado tipo 'any' para 'e'
-       if (e && e.message) alert(`Erro: ${e.message}`);
-       else alert('Erro ao ajustar o estoque.');
-      console.error(e);
-    }
-  }
+	async function handleSave(event: any) {
+		const { productId, quantity } = event.detail; // Form só envia isso
+		try {
+			let updatedItem =
+				$session.profile === 'prefeitura'
+					? await api.patch('estoque/prefeitura', { productId, quantity })
+					: await api.patch('estoque/escola', { productId, quantity });
+
+			const index = estoque.findIndex((i) => i.product.id === productId);
+			if (index !== -1) estoque[index] = updatedItem; // Substitui pelo item formatado da API
+
+			// Reordena
+			estoque.sort((a, b) => {
+				const statusOrder = { Crítico: 1, Médio: 2, Bom: 3, 'N/A': 4 };
+				const orderA = statusOrder[a.status];
+				const orderB = statusOrder[b.status];
+				if (orderA !== orderB) return orderA - orderB;
+				return a.percentage - b.percentage;
+			});
+			estoque = [...estoque]; // Força reatividade
+			showModal = false;
+			currentItem = null; // Limpa item selecionado
+
+			// 3. ADICIONAR TOAST DE SUCESSO
+			toast.success('Estoque ajustado com sucesso!');
+
+		} catch (e: any) {
+			// 4. SUBSTITUIR ALERT POR TOAST (no erro)
+			const errorMessage = e?.message || 'Erro ao ajustar o estoque.';
+			toast.error(errorMessage);
+			console.error(e);
+		}
+	}
 </script>
+
 
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
@@ -89,7 +104,7 @@
       {#if $session?.profile === 'prefeitura'}
         <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"> Estoque Central da Prefeitura </h1>
       {:else if $session?.profile === 'escola'}
-        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"> Estoque da Escola: <span class="text-gray-900 font-semibold ml-1">{$session.school?.name || ''}</span> </h1>
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"> Estoque da Escola: {$session.school?.name || ''}</h1>
       {/if}
       <p class="text-gray-600 mt-1 text-sm">Acompanhe os níveis e ajuste as quantidades de produtos.</p>
     </div>

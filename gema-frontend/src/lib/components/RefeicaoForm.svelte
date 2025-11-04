@@ -3,6 +3,8 @@
   import * as api from '$lib/api';
   import type { Product, Refeicao } from '$lib/types';
   import { Search } from 'lucide-svelte';
+  // +++ ADICIONADO: Importar o toast +++
+  import { toast } from '$lib/toast';
 
   export let cardapioId: string;
   export let diaSemana: 'segunda' | 'terça' | 'quarta' | 'quinta' | 'sexta';
@@ -10,7 +12,7 @@
   export let refeicao: Refeicao | null = null;
 
   let description = refeicao?.description || '';
-  let selectedProductIds: string[] = refeicao?.products.map(p => p.id) || [];
+  let selectedProductIds: string[] = refeicao?.products.map((p) => p.id) || [];
 
   let allProducts: Product[] = [];
   let filteredProducts: Product[] = [];
@@ -26,17 +28,20 @@
       filteredProducts = allProducts;
     } catch (e) {
       console.error('Erro ao carregar produtos:', e);
-      alert('Não foi possível carregar a lista de produtos.');
+      // +++ ALTERADO: 'alert' por 'toast.error' +++
+      toast.error('Não foi possível carregar a lista de produtos.');
     } finally {
       isLoadingProducts = false;
     }
   });
 
-  $: filteredProducts = allProducts.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  $: filteredProducts = allProducts.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   function toggleProduct(id: string) {
     if (selectedProductIds.includes(id)) {
-      selectedProductIds = selectedProductIds.filter(pid => pid !== id);
+      selectedProductIds = selectedProductIds.filter((pid) => pid !== id);
     } else {
       selectedProductIds = [...selectedProductIds, id];
     }
@@ -44,12 +49,21 @@
 
   async function handleSubmit() {
     if (isSaving || isLoadingProducts) return;
-    if (!description) {
-      alert('Por favor, informe o nome do prato (descrição).');
+
+    // --- NOVA VALIDAÇÃO (Nome do Prato) ---
+    const trimmedDescription = description.trim();
+    if (trimmedDescription === '') {
+      toast.error('Por favor, informe o nome do prato (descrição).');
       return;
     }
+    // Salva a versão "limpa"
+    description = trimmedDescription;
+    // --- FIM DA VALIDAÇÃO ---
+
+    // --- VALIDAÇÃO DE PRODUTOS ---
     if (selectedProductIds.length === 0) {
-      alert('Selecione pelo menos um produto para esta refeição.');
+      // +++ ALTERADO: 'alert' por 'toast.error' +++
+      toast.error('Selecione pelo menos um produto para esta refeição.');
       return;
     }
 
@@ -57,27 +71,25 @@
     const dto = { diaSemana, tipo, description, productIds: selectedProductIds };
 
     try {
-      // ATENÇÃO: Corrigindo a lógica de edição que estava faltando.
-      // Se 'refeicao' existe, é uma edição (PATCH), senão é criação (POST).
+      // NOTA: A lógica de edição/criação estava apontando para o mesmo endpoint POST.
+      // O ideal seria ter um endpoint PATCH para edição.
+      // Vou manter a lógica de chamar o POST, mas saiba que o backend
+      // precisa lidar com "upsert" (criar ou atualizar).
       let savedRefeicao;
       if (refeicao && refeicao.id) {
-        // Você precisará de um endpoint PATCH no backend para /refeicoes/:id
-        // Assumindo que ele existe:
+        // Se a API suportar PATCH (edição)
         // savedRefeicao = await api.patch(`cardapios/refeicoes/${refeicao.id}`, dto);
         
-        // **Seu código original só tinha POST, vou manter, mas saiba que a edição não funcionará sem um PATCH**
-        // O código abaixo provavelmente vai CRIAR UMA NOVA REFEIÇÃO em vez de editar.
-        // Para a edição funcionar, você precisa de um endpoint de PATCH/PUT.
-        // Por enquanto, vou manter o POST como no seu original:
+        // Se a API suportar POST para criar/editar (Upsert)
         savedRefeicao = await api.post(`cardapios/${cardapioId}/refeicoes`, dto);
-        
       } else {
         savedRefeicao = await api.post(`cardapios/${cardapioId}/refeicoes`, dto);
       }
-      
+
       dispatch('save', savedRefeicao);
     } catch (e: any) {
-      alert(e?.message || 'Erro ao salvar a refeição.');
+      // +++ ALTERADO: 'alert' por 'toast.error' +++
+      toast.error(e?.message || 'Erro ao salvar a refeição.');
       console.error(e);
     } finally {
       isSaving = false;
@@ -116,7 +128,9 @@
     </label>
 
     {#if isLoadingProducts}
-      <div class="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 text-center py-3 text-gray-500">
+      <div
+        class="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 text-center py-3 text-gray-500"
+      >
         Carregando produtos...
       </div>
     {:else}
@@ -135,7 +149,9 @@
           <p class="text-gray-500 text-sm text-center py-4">Nenhum produto encontrado.</p>
         {:else}
           {#each filteredProducts as product (product.id)}
-            <label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+            <label
+              class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+            >
               <input
                 type="checkbox"
                 value={product.id}
@@ -143,7 +159,9 @@
                 on:change={() => toggleProduct(product.id)}
                 class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span class="text-sm text-gray-700">{product.name} <span class="text-gray-400">({product.unit})</span></span>
+              <span class="text-sm text-gray-700"
+                >{product.name} <span class="text-gray-400">({product.unit})</span></span
+              >
             </label>
           {/each}
         {/if}

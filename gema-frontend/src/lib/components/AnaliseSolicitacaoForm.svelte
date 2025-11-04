@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import type { Solicitacao } from '$lib/types';
   import { format } from 'date-fns';
+    import { toast } from '$lib/toast';
 
   export let solicitacao: Solicitacao;
 
@@ -27,7 +28,7 @@
       item => (item.quantityApproved ?? 0) > item.quantityRequested
     );
     if (invalidItems.length > 0) {
-      alert(
+      toast.error(
         `Erro: A quantidade aprovada para "${invalidItems[0].productName}" não pode ser maior que a solicitada.`
       );
       return;

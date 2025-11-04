@@ -11,6 +11,10 @@
 	import DetalhesSolicitacao from '$lib/components/DetalhesSolicitacao.svelte';
 	import type { Solicitacao } from '$lib/types';
 
+	// 1. IMPORTAR O TOAST
+	import { toast } from '$lib/toast';
+	// (Não precisamos do ConfirmDialog aqui, pois não há exclusão simples)
+
 	let solicitacoes: Solicitacao[] = [];
 	let isLoading = true;
 	let isActionLoading = false;
@@ -62,7 +66,7 @@
 		// 3. Filtro por Data (NOVO)
 		// Extrai 'YYYY-MM-DD' do timestamp (ex: "2025-10-28T10:00:00.000Z")
 		const solicitacaoDatePart = s.createdAt.substring(0, 10);
-		
+
 		const dateStartMatch = !filterDateStart || solicitacaoDatePart >= filterDateStart;
 		const dateEndMatch = !filterDateEnd || solicitacaoDatePart <= filterDateEnd;
 
@@ -75,9 +79,11 @@
 		error = null;
 		try {
 			solicitacoes = await api.get('solicitacoes');
-		} catch (e) {
-			error = 'Não foi possível carregar as solicitações.';
+		} catch (e: any) {
+			error = e?.message || 'Não foi possível carregar as solicitações.';
 			console.error('Erro ao carregar solicitações:', e);
+			// Exibe o erro no toast aqui, se desejar
+			toast.error(error ?? 'Ocorreu um erro desconhecido.');
 		} finally {
 			isLoading = false;
 		}
@@ -104,7 +110,7 @@
 		return status.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 	}
 
-	// --- AÇÕES PRINCIPAIS (Sem alterações) ---
+	// --- AÇÕES PRINCIPAIS (COM TOASTS) ---
 
 	// 1. Criação
 	function handleNovaSolicitacao() {
@@ -119,12 +125,10 @@
 			const createdSolicitacao = await api.post('solicitacoes', dataToSend);
 			solicitacoes = [createdSolicitacao, ...solicitacoes];
 			showCreateModal = false;
+			toast.success('Solicitação criada com sucesso!'); // <-- SUBSTITUÍDO
 		} catch (e: any) {
-			if (e && e.message) {
-				alert(`Erro: ${e.message}`);
-			} else {
-				alert('Erro ao criar a solicitação.');
-			}
+			const errorMessage = e?.message || 'Erro ao criar a solicitação.';
+			toast.error(errorMessage); // <-- SUBSTITUÍDO
 			console.error('Erro ao salvar nova solicitação:', e);
 		} finally {
 			isActionLoading = false;
@@ -137,8 +141,8 @@
 		try {
 			solicitacaoToAnalyze = await api.get(`solicitacoes/${id}`);
 			showAnalyzeModal = true;
-		} catch (e) {
-			alert('Erro ao carregar detalhes da solicitação para análise.');
+		} catch (e: any) {
+			toast.error(e?.message || 'Erro ao carregar detalhes da solicitação para análise.'); // <-- SUBSTITUÍDO
 			console.error('Erro ao carregar para análise:', e);
 		} finally {
 			isActionLoading = false;
@@ -158,12 +162,10 @@
 			);
 			showAnalyzeModal = false;
 			solicitacaoToAnalyze = null;
+			toast.success('Análise salva com sucesso!'); // <-- SUBSTITUÍDO
 		} catch (e: any) {
-			if (e && e.message) {
-				alert(`Erro: ${e.message}`);
-			} else {
-				alert('Erro ao salvar a análise.');
-			}
+			const errorMessage = e?.message || 'Erro ao salvar a análise.';
+			toast.error(errorMessage); // <-- SUBSTITUÍDO
 			console.error('Erro ao salvar análise:', e);
 		} finally {
 			isActionLoading = false;
@@ -176,8 +178,8 @@
 		try {
 			solicitacaoToConfirm = await api.get(`solicitacoes/${id}`);
 			showConfirmModal = true;
-		} catch (e) {
-			alert('Erro ao carregar detalhes da solicitação para confirmação.');
+		} catch (e: any) {
+			toast.error(e?.message || 'Erro ao carregar detalhes da solicitação para confirmação.'); // <-- SUBSTITUÍDO
 			console.error('Erro ao carregar para confirmação:', e);
 		} finally {
 			isActionLoading = false;
@@ -197,12 +199,10 @@
 			);
 			showConfirmModal = false;
 			solicitacaoToConfirm = null;
+			toast.success('Recebimento confirmado com sucesso!'); // <-- SUBSTITUÍDO
 		} catch (e: any) {
-			if (e && e.message) {
-				alert(`Erro: ${e.message}`);
-			} else {
-				alert('Erro ao salvar a confirmação.');
-			}
+			const errorMessage = e?.message || 'Erro ao salvar a confirmação.';
+			toast.error(errorMessage); // <-- SUBSTITUÍDO
 			console.error('Erro ao salvar confirmação:', e);
 		} finally {
 			isActionLoading = false;
@@ -216,7 +216,7 @@
 			solicitacaoToView = found;
 			showDetailsModal = true;
 		} else {
-			alert('Erro: Não foi possível encontrar os detalhes desta solicitação.');
+			toast.error('Erro: Não foi possível encontrar os detalhes desta solicitação.'); // <-- SUBSTITUÍDO
 			console.error(`Solicitação com ID ${id} não encontrada na lista local.`);
 		}
 	}

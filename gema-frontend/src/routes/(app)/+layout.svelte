@@ -5,6 +5,7 @@
   import { session, initializeSession } from '$lib/sessionStore';
   import { page } from '$app/stores';
   import GemaLogo from '$lib/assets/logo-gema.png'; 
+  import Notifications from '$lib/components/Notifications.svelte';
 
   import {
     LayoutDashboard, Users, Building2, School, Package, Boxes, LogOut,
@@ -124,4 +125,5 @@
       <slot />
     </main>
   </div>
+  <Notifications />
 </div>
