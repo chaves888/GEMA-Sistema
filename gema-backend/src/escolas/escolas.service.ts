@@ -22,14 +22,27 @@ export class EscolasService {
   ) {}
 
   async create(createEscolaDto: CreateEscolaDto): Promise<Escola> {
-    const { cityId, ...rest } = createEscolaDto;
-    const city = await this.cidadeRepository.findOneBy({ id: cityId });
-    if (!city) {
-      throw new NotFoundException(`Cidade com ID "${cityId}" não encontrada`);
-    }
-    const escola = this.escolaRepository.create({ ...rest, city });
-    return this.escolaRepository.save(escola);
+  const { cityId, name, ...rest } = createEscolaDto;
+
+  // Verifica se a cidade existe
+  const city = await this.cidadeRepository.findOneBy({ id: cityId });
+  if (!city) {
+    throw new NotFoundException(`Cidade com ID "${cityId}" não encontrada`);
   }
+
+  // 🔹 Verifica se já existe uma escola com o mesmo nome (em qualquer cidade)
+  const existingEscola = await this.escolaRepository.findOne({
+    where: { name },
+  });
+
+  if (existingEscola) {
+    throw new ConflictException(`Já existe uma escola com o nome "${name}".`);
+  }
+
+  // Cria e salva a nova escola
+  const escola = this.escolaRepository.create({ ...rest, name, city });
+  return this.escolaRepository.save(escola);
+}
 
   findAll(): Promise<Escola[]> {
     return this.escolaRepository.find({ relations: ['city'] });

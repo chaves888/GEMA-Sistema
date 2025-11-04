@@ -8,7 +8,6 @@ import {
 
 export enum ProductUnit {
   LITRO = 'L',
-  UNIDADE = 'UN',
 }
 
 @Entity('products')

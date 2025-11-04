@@ -30,7 +30,7 @@ export class CidadesService {
         if (error.message.includes('cep')) { 
             throw new ConflictException('Já existe uma cidade cadastrada com este CEP.'); 
         }
-        throw new ConflictException('Erro ao salvar cidade. Verifique os dados únicos.');
+        throw new ConflictException('Já existe uma cidade cadastrada com este CEP.');
         // --- FIM MODIFICAÇÃO ---
       }
       throw error;
@@ -72,7 +72,7 @@ export class CidadesService {
            if (error.message.includes('cep')) { 
                 throw new ConflictException('Já existe outra cidade cadastrada com este CEP.'); 
             }
-           throw new ConflictException('Erro ao salvar cidade. Verifique os dados únicos.');
+           throw new ConflictException('Já existe outra cidade cadastrada com este CEP.');
             // --- FIM MODIFICAÇÃO ---
        }
       throw error;

@@ -46,7 +46,6 @@
         id="unit" required bind:value={product.unit}
         class="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-300 transition-all shadow-sm"
       >
-        <option value="L">Litro (L)</option>
         <option value="UN">Unidade (UN)</option>
       </select>
     </div>
@@ -63,7 +62,7 @@
       </div>
 
        <div>
-        <label for="minStockEscola" class="block text-sm font-semibold text-gray-700 mb-1">Estoque Mín. Escola (Padrão)</label>
+        <label for="minStockEscola" class="block text-sm font-semibold text-gray-700 mb-1">Estoque Mín. Escola</label>
         <input
           type="number" id="minStockEscola" required step="0.01" min="0"
           bind:value={product.minStockEscola}

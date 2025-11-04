@@ -21,30 +21,39 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { schoolId, ...userData } = createUserDto;
+  const { schoolId, name, ...userData } = createUserDto;
 
-    const newUser = this.usersRepository.create(userData);
+  // 🔹 Verifica se já existe um usuário com o mesmo nome
+  const existingUser = await this.usersRepository.findOne({
+    where: { name },
+  });
 
-    if (schoolId) {
-      const school = await this.escolasRepository.findOneBy({ id: schoolId });
-      if (!school) {
-        throw new NotFoundException(`Escola com ID ${schoolId} não encontrada.`);
-      }
-      newUser.school = school;
-    }
-
-    try {
-      await this.usersRepository.save(newUser);
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException('Este endereço de email já está cadastrado.');
-      }
-      throw error;
-    }
-
-    const { password, ...result } = newUser;
-    return result;
+  if (existingUser) {
+    throw new ConflictException(`Já existe um usuário cadastrado com o nome "${name}".`);
   }
+
+  const newUser = this.usersRepository.create({ name, ...userData });
+
+  if (schoolId) {
+    const school = await this.escolasRepository.findOneBy({ id: schoolId });
+    if (!school) {
+      throw new NotFoundException(`Escola com ID ${schoolId} não encontrada.`);
+    }
+    newUser.school = school;
+  }
+
+  try {
+    await this.usersRepository.save(newUser);
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw new ConflictException('Este endereço de email já está cadastrado.');
+    }
+    throw error;
+  }
+
+  const { password, ...result } = newUser;
+  return result;
+}
 
   async findAll() {
     const users = await this.usersRepository.find({ relations: ['school'] });
