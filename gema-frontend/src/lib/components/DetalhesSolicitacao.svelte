@@ -28,6 +28,10 @@
         return 'bg-red-100 text-red-800';
       case 'recebido':
         return 'bg-gray-200 text-gray-800';
+      case 'recebido_divergente':
+        return 'bg-orange-100 text-orange-800'; // Laranja
+      case 'cancelado':
+        return 'bg-gray-400 text-white';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -74,6 +78,22 @@
         </p>
       </div>
     {/if}
+    {#if solicitacao.observacaoEscola}
+      <div class="md:col-span-2 mt-2">
+        <span class="font-semibold text-gray-500">
+          {#if solicitacao.status === 'cancelado'}
+            Motivo do Cancelamento (Escola):
+          {:else if solicitacao.status === 'recebido' || solicitacao.status === 'recebido_divergente'}
+            Observação de Recebimento (Escola):
+          {:else}
+            Observação da Escola:
+          {/if}
+        </span>
+        <p class="text-sm text-gray-700 mt-1 bg-yellow-50 p-3 border border-yellow-200 rounded-lg shadow-inner italic">
+          “{solicitacao.observacaoEscola}”
+        </p>
+      </div>
+    {/if}
   </div>
 
   <div>
@@ -81,15 +101,15 @@
     {#if solicitacao.items.length === 0}
       <p class="text-sm text-gray-500 italic">Nenhum item nesta solicitação.</p>
     {:else}
-      <div class="overflow-x-auto border rounded-lg shadow-sm">
+      <div class="overflow-x-auto border rounded-lg shadow-sm max-h-96 overflow-y-auto">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
           <thead class="bg-gray-50">
             <tr>
-              <th scope="col" class="px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Produto</th>
-              <th scope="col" class="px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">Unid.</th>
-              <th scope="col" class="px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Solicitado</th>
-              <th scope="col" class="px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Aprovado</th>
-              <th scope="col" class="px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Recebido</th>
+              <th scope="col" class="sticky top-0 bg-gray-50 px-5 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Produto</th>
+              <th scope="col" class="sticky top-0 bg-gray-50 px-5 py-3 text-center font-semibold text-gray-600 uppercase tracking-wider">Unid.</th>
+              <th scope="col" class="sticky top-0 bg-gray-50 px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Solicitado</th>
+              <th scope="col" class="sticky top-0 bg-gray-50 px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Aprovado</th>
+              <th scope="col" class="sticky top-0 bg-gray-50 px-5 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Recebido</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">

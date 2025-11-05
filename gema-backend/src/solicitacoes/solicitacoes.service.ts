@@ -5,15 +5,13 @@ import { EscolaEstoque } from 'src/estoque/entities/escola-estoque.entity';
 import { PrefeituraEstoque } from 'src/estoque/entities/prefeitura-estoque.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { User } from 'src/users/entities/user.entity';
-import { DataSource, Repository } from 'typeorm'; // Importar DataSource para transações
+import { DataSource, Repository } from 'typeorm';
 import { AnalyzeSolicitacaoDto } from './dto/analyze-solicitacao.dto';
 import { ConfirmRecebimentoDto } from './dto/confirm-recebimento.dto';
 import { CreateSolicitacaoDto } from './dto/create-solicitacao.dto';
 import { SolicitacaoItem } from './entities/solicitacao-item.entity';
 import { Solicitacao, SolicitacaoStatus } from './entities/solicitacao.entity';
-
-// Não precisamos mais do EstoqueService aqui, vamos usar os repositórios diretamente na transação
-// import { EstoqueService } from 'src/estoque/estoque.service';
+import { CancelSolicitacaoDto } from './dto/cancel-solicitacao.dto';
 
 @Injectable()
 export class SolicitacoesService {
@@ -28,7 +26,6 @@ export class SolicitacoesService {
     private readonly prefeituraEstoqueRepo: Repository<PrefeituraEstoque>,
     @InjectRepository(EscolaEstoque)
     private readonly escolaEstoqueRepo: Repository<EscolaEstoque>,
-    // DataSource para controle de transação
     private dataSource: DataSource,
   ) {}
 
@@ -66,7 +63,6 @@ export class SolicitacoesService {
         if (!product) {
           throw new NotFoundException(`Produto com ID ${itemDto.productId} não encontrado.`);
         }
-        // Validação: Quantidade solicitada deve ser positiva
         if (itemDto.quantityRequested <= 0) {
           throw new BadRequestException(`A quantidade solicitada para "${product.name}" deve ser maior que zero.`);
         }
@@ -79,18 +75,13 @@ export class SolicitacoesService {
       }
 
       await queryRunner.manager.save(SolicitacaoItem, solicitacaoItems);
-
       await queryRunner.commitTransaction();
-
-      // Retorna a solicitação criada com todos os dados carregados
       return this.findOne(solicitacaoSalva.id);
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      // Re-lança o erro para ser tratado pelo NestJS (ex: validações, not found)
       throw error;
     } finally {
-      // Libera o queryRunner independentemente de sucesso ou falha
       await queryRunner.release();
     }
   }
@@ -100,20 +91,18 @@ export class SolicitacoesService {
     const relations = ['school', 'requester', 'items', 'items.product'];
 
     if (user.profile === 'escola') {
-      if (!user.school) return []; // Escola sem associação não tem solicitações
+      if (!user.school) return [];
       return this.solicitacaoRepository.find({
         where: { school: { id: user.school.id } },
         order: { createdAt: 'DESC' },
         relations,
       });
     } else if (user.profile === 'prefeitura') {
-      // Prefeitura vê todas
       return this.solicitacaoRepository.find({
         order: { createdAt: 'DESC' },
         relations,
       });
     }
-    // Outros perfis (nutricionista, cozinheira) não veem a lista principal por padrão
     return [];
   }
 
@@ -121,7 +110,6 @@ export class SolicitacoesService {
   async findOne(id: string): Promise<Solicitacao> {
     const solicitacao = await this.solicitacaoRepository.findOne({
         where: { id },
-        // Carrega todas as relações necessárias para exibição detalhada
         relations: ['school', 'requester', 'items', 'items.product'],
     });
     if (!solicitacao) {
@@ -131,7 +119,6 @@ export class SolicitacoesService {
   }
 
   // --- 4. ANÁLISE PELA PREFEITURA ---
-  // (Código da análise continua igual ao que você enviou, pois não foi o foco)
   async analyze(id: string, analyzeDto: AnalyzeSolicitacaoDto): Promise<Solicitacao> {
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -141,44 +128,57 @@ export class SolicitacoesService {
     try {
       const solicitacao = await queryRunner.manager.findOne(Solicitacao, {
           where: { id },
-          relations: ['items', 'items.product', 'school'], // Carrega a escola aqui
-          lock: { mode: 'pessimistic_write' } // Trava a linha para evitar concorrência
+          relations: ['items', 'items.product', 'school'],
+          lock: { mode: 'pessimistic_write' }
       });
 
       if (!solicitacao) { throw new NotFoundException(`Solicitação com ID ${id} não encontrada.`); }
       if (solicitacao.status !== SolicitacaoStatus.PENDENTE) {
         throw new BadRequestException(`Esta solicitação não está mais pendente (status atual: ${solicitacao.status}).`);
       }
-      // Se status for diferente de NEGADO, os itens são obrigatórios
-      if (analyzeDto.status !== SolicitacaoStatus.NEGADO && (!analyzeDto.items || analyzeDto.items.length === 0)) {
-          throw new BadRequestException('Para aprovar (total ou parcialmente), é necessário fornecer a análise dos itens.');
-      }
 
-      // Se for NEGADO, atualiza status e observação e encerra
       if (analyzeDto.status === SolicitacaoStatus.NEGADO) {
+        if (!analyzeDto.observacaoPrefeitura) {
+           throw new BadRequestException('A observação é obrigatória ao negar a solicitação.');
+        }
         solicitacao.status = SolicitacaoStatus.NEGADO;
         solicitacao.observacaoPrefeitura = analyzeDto.observacaoPrefeitura || null;
+        
+        for (const item of solicitacao.items) {
+          item.quantityApproved = 0;
+        }
+        await queryRunner.manager.save(SolicitacaoItem, solicitacao.items);
         await queryRunner.manager.save(Solicitacao, solicitacao);
+
         await queryRunner.commitTransaction();
-        return this.findOne(id); // Retorna a solicitação atualizada
+        return this.findOne(id);
       }
 
-      // --- Processamento para APROVADO ou APROVADO_PARCIALMENTE ---
+      if (!analyzeDto.items || analyzeDto.items.length === 0) {
+        throw new BadRequestException('Para aprovar (total ou parcialmente), é necessário fornecer a análise dos itens.');
+      }
+      
+      const hasZeroApprovedItem = analyzeDto.items.some(item => (item.quantityApproved ?? 0) === 0);
+      if (hasZeroApprovedItem && !analyzeDto.observacaoPrefeitura) {
+          throw new BadRequestException('A observação é obrigatória se algum item individual for negado (quantidade aprovada 0).');
+      }
 
-      // 1. Pré-Validação de Estoque da Prefeitura (bloqueia se não tiver o suficiente)
-      for (const itemDto of analyzeDto.items!) { // Usa ! pois já validamos que items existe se não for NEGADO
+      for (const itemDto of analyzeDto.items!) {
           const itemSolicitado = solicitacao.items.find(item => item.id === itemDto.itemId);
           if (!itemSolicitado) {
             throw new NotFoundException(`Item com ID ${itemDto.itemId} não pertence à solicitação ${id}.`);
           }
-          const quantityApproved = itemDto.quantityApproved ?? 0; // Trata nulo como 0
+          const quantityApproved = itemDto.quantityApproved ?? 0;
           if (quantityApproved < 0) throw new BadRequestException(`Quantidade aprovada não pode ser negativa para o item ${itemSolicitado.product.name}.`);
+          
+          if (quantityApproved > itemSolicitado.quantityRequested) {
+             throw new BadRequestException(`Quantidade aprovada (${quantityApproved}) para "${itemSolicitado.product.name}" não pode ser maior que a solicitada (${itemSolicitado.quantityRequested}).`);
+          }
 
-          // Verifica estoque da prefeitura APENAS se for aprovar alguma quantidade
           if (quantityApproved > 0) {
               const estoquePrefeitura = await queryRunner.manager.findOne(PrefeituraEstoque, {
                   where: { product: { id: itemSolicitado.product.id } },
-                  lock: { mode: 'pessimistic_write' } // Trava para leitura/escrita
+                  lock: { mode: 'pessimistic_write' }
               });
               if (!estoquePrefeitura || estoquePrefeitura.quantity < quantityApproved) {
                   throw new ConflictException(`Estoque insuficiente na prefeitura para "${itemSolicitado.product.name}". Necessário: ${quantityApproved}, Disponível: ${estoquePrefeitura?.quantity ?? 0}`);
@@ -186,65 +186,40 @@ export class SolicitacoesService {
           }
       }
 
-      // 2. Atualização dos Itens da Solicitação e Débito/Crédito dos Estoques (Se passou na validação)
       const itemsParaSalvar: SolicitacaoItem[] = [];
-      let totalRequested = 0;
-      let totalApproved = 0;
-
       for (const itemDto of analyzeDto.items!) {
-        const itemSolicitado = solicitacao.items.find(item => item.id === itemDto.itemId)!; // Sabemos que existe pela validação anterior
+        const itemSolicitado = solicitacao.items.find(item => item.id === itemDto.itemId)!;
         const quantityApproved = itemDto.quantityApproved ?? 0;
 
         itemSolicitado.quantityApproved = quantityApproved;
         itemsParaSalvar.push(itemSolicitado);
-        totalRequested += itemSolicitado.quantityRequested;
-        totalApproved += quantityApproved;
 
-        // Somente debita/credita se alguma quantidade foi aprovada
         if (quantityApproved > 0) {
-          // --- Débito do Estoque da Prefeitura ---
-          // Busca novamente com lock para garantir que a quantidade não mudou
           let estoquePrefeitura = await queryRunner.manager.findOneOrFail(PrefeituraEstoque, {
               where: { product: { id: itemSolicitado.product.id } },
               lock: { mode: 'pessimistic_write' }
           });
-          // Verifica novamente (paranóia, mas seguro em alta concorrência)
           if (estoquePrefeitura.quantity < quantityApproved) {
-             throw new ConflictException(`Concorrência detectada: Estoque insuficiente na prefeitura para "${itemSolicitado.product.name}" após lock.`);
+              throw new ConflictException(`Concorrência detectada: Estoque insuficiente na prefeitura para "${itemSolicitado.product.name}" após lock.`);
           }
           estoquePrefeitura.quantity -= quantityApproved;
           await queryRunner.manager.save(PrefeituraEstoque, estoquePrefeitura);
-
-          // --- Crédito (PENDENTE DE CONFIRMAÇÃO) no Estoque da Escola ---
-          // Nesta etapa, NÃO creditamos o estoque da escola ainda. Apenas reservamos na prefeitura.
-          // O crédito real ocorrerá na função `confirmRecebimento`.
         }
       }
 
-      // 3. Define o Status Final da Solicitação e Observação
-      if (totalApproved <= 0) {
-        solicitacao.status = SolicitacaoStatus.NEGADO; // Se nada foi aprovado, vira NEGADO
-      } else if (totalApproved < totalRequested) {
-        solicitacao.status = SolicitacaoStatus.APROVADO_PARCIALMENTE;
-      } else {
-        solicitacao.status = SolicitacaoStatus.APROVADO;
-      }
+      solicitacao.status = analyzeDto.status;
       solicitacao.observacaoPrefeitura = analyzeDto.observacaoPrefeitura || null;
 
-      // 4. Salva as Alterações na Solicitação e seus Itens
       await queryRunner.manager.save(SolicitacaoItem, itemsParaSalvar);
       await queryRunner.manager.save(Solicitacao, solicitacao);
 
-      // Finaliza a transação
       await queryRunner.commitTransaction();
-      return this.findOne(id); // Retorna a solicitação atualizada
+      return this.findOne(id);
 
     } catch (error) {
-      // Se qualquer erro ocorrer, desfaz tudo
       await queryRunner.rollbackTransaction();
-      throw error; // Re-lança o erro
+      throw error; 
     } finally {
-      // Libera o queryRunner
       await queryRunner.release();
     }
   }
@@ -252,20 +227,19 @@ export class SolicitacoesService {
   // --- 5. CONFIRMAÇÃO PELA ESCOLA (COM ATUALIZAÇÃO DE ESTOQUE) ---
   async confirmRecebimento(id: string, confirmDto: ConfirmRecebimentoDto, user: User): Promise<Solicitacao> {
     
-    // Inicia a transação
+    const { items, comDivergencia, observacaoEscola } = confirmDto;
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Busca a solicitação com lock para evitar problemas de concorrência
       const solicitacao = await queryRunner.manager.findOne(Solicitacao, {
         where: { id },
-        relations: ['school', 'items', 'items.product'], // Carrega relações necessárias
-        lock: { mode: 'pessimistic_write' }, // Trava a solicitação
+        relations: ['school', 'items', 'items.product'], 
+        lock: { mode: 'pessimistic_write' }, 
       });
 
-      // Validações iniciais
       if (!solicitacao) { throw new NotFoundException(`Solicitação com ID ${id} não encontrada.`); }
       if (solicitacao.school.id !== user.school?.id) {
         throw new ForbiddenException('Você não tem permissão para confirmar o recebimento desta solicitação.');
@@ -276,22 +250,20 @@ export class SolicitacoesService {
 
       const itemsParaSalvarSolicitacao: SolicitacaoItem[] = [];
       const estoquesParaSalvarEscola: EscolaEstoque[] = [];
+      
+      let hasQuantityDivergence = false; // Flag para detecção automática
 
-      // Loop para processar cada item confirmado
-      for (const itemDto of confirmDto.items) {
-        // Encontra o item correspondente na solicitação carregada
+      for (const itemDto of items) {
         const itemSolicitado = solicitacao.items.find(item => item.id === itemDto.itemId);
         
-        // Se o item do DTO não existe na solicitação (estranho, mas seguro verificar)
         if (!itemSolicitado) {
           console.warn(`Item com ID ${itemDto.itemId} não encontrado na solicitação ${id} durante a confirmação.`);
-          continue; // Pula para o próximo item do DTO
+          continue; 
         }
 
-        const maxRecebivel = itemSolicitado.quantityApproved ?? 0; // Máximo que pode ser recebido é o que foi aprovado
-        const quantityReceived = itemDto.quantityReceived ?? 0; // Quantidade informada como recebida (trata nulo como 0)
+        const maxRecebivel = itemSolicitado.quantityApproved ?? 0; 
+        const quantityReceived = itemDto.quantityReceived ?? 0; 
 
-        // Validações da quantidade recebida
         if (quantityReceived < 0) {
             throw new BadRequestException(`A quantidade recebida não pode ser negativa para "${itemSolicitado.product.name}".`);
         }
@@ -299,81 +271,111 @@ export class SolicitacoesService {
             throw new BadRequestException(`A quantidade recebida (${quantityReceived}) para "${itemSolicitado.product.name}" não pode ser maior que a aprovada (${maxRecebivel}).`);
         }
 
-        // Atualiza a quantidade recebida no item da solicitação
+        // Detecção automática de divergência
+        if (quantityReceived !== itemSolicitado.quantityApproved) {
+            hasQuantityDivergence = true;
+        }
+
         itemSolicitado.quantityReceived = quantityReceived;
         itemsParaSalvarSolicitacao.push(itemSolicitado);
 
-        // *** INÍCIO DA LÓGICA DE ATUALIZAÇÃO DE ESTOQUE ***
         if (quantityReceived > 0) {
-          // Busca o estoque da escola para este produto, com lock
           let estoqueEscola = await queryRunner.manager.findOne(EscolaEstoque, {
             where: {
               product: { id: itemSolicitado.product.id },
               school: { id: solicitacao.school.id }
             },
-            relations: ['product', 'school'], // Carrega relações para salvar
-            lock: { mode: 'pessimistic_write' } // Trava o estoque da escola
+            relations: ['product', 'school'], 
+            lock: { mode: 'pessimistic_write' } 
           });
 
-          // Se não existe estoque para esse produto nessa escola, cria um novo
           if (!estoqueEscola) {
             estoqueEscola = queryRunner.manager.create(EscolaEstoque, {
               product: itemSolicitado.product,
               school: solicitacao.school,
               quantity: quantityReceived,
-              minStock: 0 // Assume 0 inicialmente, pode ser ajustado depois
+              minStock: 0 
             });
           } else {
-            // Se já existe, apenas adiciona a quantidade recebida
             estoqueEscola.quantity += quantityReceived;
           }
-          // Adiciona à lista para salvar depois
           estoquesParaSalvarEscola.push(estoqueEscola);
         }
-        // *** FIM DA LÓGICA DE ATUALIZAÇÃO DE ESTOQUE ***
-      } // Fim do loop pelos itens
+      } // Fim do loop 'for'
 
-      // Atualiza o status geral da solicitação para RECEBIDO
-      solicitacao.status = SolicitacaoStatus.RECEBIDO;
+      // Verifica a divergência final (manual OU automática)
+      const finalDivergence = comDivergencia || hasQuantityDivergence;
 
-      // Salva todas as alterações no banco de dados DENTRO da transação
+      if (finalDivergence && !observacaoEscola) {
+         throw new BadRequestException('A observação é obrigatória quando há divergência (seja na quantidade ou marcada manualmente).');
+      }
+      
+      if (finalDivergence) {
+        solicitacao.status = SolicitacaoStatus.RECEBIDO_COM_DIVERGENCIA;
+      } else {
+        solicitacao.status = SolicitacaoStatus.RECEBIDO;
+      }
+      
+      solicitacao.observacaoEscola = finalDivergence ? (observacaoEscola || null) : null;
+
       await queryRunner.manager.save(SolicitacaoItem, itemsParaSalvarSolicitacao);
-      await queryRunner.manager.save(EscolaEstoque, estoquesParaSalvarEscola); // Salva as atualizações/criações de estoque
-      await queryRunner.manager.save(Solicitacao, solicitacao); // Salva a solicitação com o novo status
+      await queryRunner.manager.save(EscolaEstoque, estoquesParaSalvarEscola); 
+      await queryRunner.manager.save(Solicitacao, solicitacao); 
 
-      // Se tudo deu certo, confirma a transação
       await queryRunner.commitTransaction();
 
     } catch (error) {
-      // Se qualquer erro ocorrer, desfaz tudo
       await queryRunner.rollbackTransaction();
-      throw error; // Re-lança o erro para o NestJS tratar
+      throw error; 
     } finally {
-      // Libera o queryRunner, independentemente de sucesso ou falha
       await queryRunner.release();
     }
 
-    // Retorna a solicitação atualizada após a confirmação
     return this.findOne(id);
   }
 
-
   // --- 6. REMOÇÃO DE SOLICITAÇÃO ---
   async remove(id: string): Promise<void> {
-    // Busca a solicitação (findOne já lança NotFoundException se não existir)
     const solicitacao = await this.findOne(id);
 
-    // Regra de Negócio: Só permite remover se estiver PENDENTE
     if (solicitacao.status !== SolicitacaoStatus.PENDENTE) {
       throw new BadRequestException('Não é possível remover uma solicitação que já foi analisada ou recebida.');
     }
 
-    // A remoção da solicitação deve automaticamente remover os itens
-    // se a relação no `solicitacao.entity.ts` estiver configurada com `cascade: true` ou `onDelete: 'CASCADE'`
-    // Caso contrário, você precisaria remover os itens manualmente antes:
-    // await this.itemRepository.delete({ solicitacao: { id: id } });
-
     await this.solicitacaoRepository.remove(solicitacao);
-    // Não retorna nada em caso de sucesso (HttpCode 204 no controller)
+  }
+
+  // --- 7. CONTAGEM DE PENDENTES (PARA PREFEITURA) ---
+  async getPendentesCount(): Promise<{ count: number }> {
+    const count = await this.solicitacaoRepository.count({
+      where: { status: SolicitacaoStatus.PENDENTE },
+    });
+    return { count };
+  }
+
+  // --- 8. CANCELAMENTO PELA ESCOLA ---
+  async cancelar(id: string, user: User, cancelDto: CancelSolicitacaoDto): Promise<Solicitacao> {
+    const solicitacao = await this.solicitacaoRepository.findOne({
+      where: { id },
+      relations: ['school'], 
+    });
+
+    if (!solicitacao) {
+      throw new NotFoundException(`Solicitação com ID "${id}" não encontrada.`);
+    }
+
+    if (!user.school || solicitacao.school.id !== user.school.id) {
+      throw new ForbiddenException('Você não tem permissão para cancelar esta solicitação.');
+    }
+
+    if (solicitacao.status !== SolicitacaoStatus.PENDENTE) {
+      throw new BadRequestException(`Apenas solicitações pendentes podem ser canceladas (status atual: ${solicitacao.status}).`);
+    }
+
+    solicitacao.status = SolicitacaoStatus.CANCELADO;
+    solicitacao.observacaoEscola = cancelDto.motivoCancelamento || null; 
+    
+    await this.solicitacaoRepository.save(solicitacao);
+    return this.findOne(id);
   }
 }

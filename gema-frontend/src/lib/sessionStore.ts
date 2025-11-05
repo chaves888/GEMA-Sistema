@@ -1,8 +1,11 @@
+// src/lib/sessionStore.ts
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { jwtDecode } from 'jwt-decode';
 
 export const session = writable<any>(null);
+// <-- NOVA STORE -->
+export const pendingSolicitacoesCount = writable<number>(0);
 
 export function initializeSession() {
   if (browser) {

@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import type { Solicitacao } from '$lib/types';
   import { format } from 'date-fns';
-    import { toast } from '$lib/toast';
+  import { toast } from '$lib/toast';
 
   export let solicitacao: Solicitacao;
 
@@ -17,43 +17,86 @@
   }));
 
   const dispatch = createEventDispatcher();
+  let isNegando = false; 
+
+  // --- LÓGICA REATIVA ADICIONADA ---
+  // Esta variável irá recalcular a soma total toda vez que 'itemsAnalisados' mudar
+  $: totalApproved = itemsAnalisados.reduce(
+      (sum, item) => sum + (Number(item.quantityApproved) || 0), 
+      0
+  );
+  // --- FIM DA LÓGICA ADICIONADA ---
 
   function handleSubmit() {
-    let finalStatus: 'aprovado' | 'aprovado_parcialmente' | 'negado';
+    if (!isNegando) {
+      // Usamos a variável reativa que já está calculada
+      // const totalApproved = itemsAnalisados.reduce... (REMOVIDO, já temos o $: )
 
-    const totalRequested = itemsAnalisados.reduce((sum, item) => sum + item.quantityRequested, 0);
-    const totalApproved = itemsAnalisados.reduce((sum, item) => sum + (item.quantityApproved ?? 0), 0);
-
-    const invalidItems = itemsAnalisados.filter(
-      item => (item.quantityApproved ?? 0) > item.quantityRequested
-    );
-    if (invalidItems.length > 0) {
-      toast.error(
-        `Erro: A quantidade aprovada para "${invalidItems[0].productName}" não pode ser maior que a solicitada.`
+      const invalidItems = itemsAnalisados.filter(
+        item => (item.quantityApproved ?? 0) > item.quantityRequested
       );
-      return;
-    }
+      if (invalidItems.length > 0) {
+        toast.error(
+          `Erro: A quantidade aprovada para "${invalidItems[0].productName}" não pode ser maior que a solicitada.`
+        );
+        return;
+      }
 
-    if (totalApproved <= 0) {
-      finalStatus = 'negado';
-    } else if (totalApproved < totalRequested) {
-      finalStatus = 'aprovado_parcialmente';
+      const hasZeroItem = itemsAnalisados.some(item => (item.quantityApproved ?? 0) === 0);
+      if (hasZeroItem && !observacaoPrefeitura) {
+         toast.error('Observação é obrigatória se a quantidade de algum item for 0.');
+         return;
+      }
+
+      let finalStatus: 'aprovado' | 'aprovado_parcialmente' | 'negado';
+      
+      // Usamos a variável reativa aqui também
+      if (totalApproved <= 0) {
+        finalStatus = 'negado';
+        if (!observacaoPrefeitura) {
+           toast.error('Observação é obrigatória se nenhum item for aprovado.');
+           return;
+        }
+      } else if (totalApproved < itemsAnalisados.reduce((sum, item) => sum + item.quantityRequested, 0)) {
+        finalStatus = 'aprovado_parcialmente';
+      } else {
+        finalStatus = 'aprovado';
+      }
+
+      dispatch('save', {
+        status: finalStatus,
+        observacaoPrefeitura: observacaoPrefeitura || undefined,
+        items: itemsAnalisados.map(item => ({
+          itemId: item.itemId,
+          quantityApproved: item.quantityApproved ?? 0,
+        })),
+      });
+
     } else {
-      finalStatus = 'aprovado';
+      if (!observacaoPrefeitura) {
+         toast.error('A observação é obrigatória para negar a solicitação.');
+         return;
+      }
+      dispatch('save', {
+         status: 'negado',
+         observacaoPrefeitura: observacaoPrefeitura,
+         items: [], 
+      });
     }
+  }
 
-    dispatch('save', {
-      status: finalStatus,
-      observacaoPrefeitura: observacaoPrefeitura || undefined,
-      items: itemsAnalisados.map(item => ({
-        itemId: item.itemId,
-        quantityApproved: item.quantityApproved ?? 0,
-      })),
-    });
+  function handleNegar() {
+     isNegando = true;
+     handleSubmit();
+  }
+
+  function handleSalvarAnalise() {
+     isNegando = false;
+     handleSubmit();
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+<form on:submit|preventDefault={handleSalvarAnalise} class="space-y-6">
   <div class="border-b pb-4 mb-4">
     <h2 class="text-3xl font-bold text-gray-800">Analisar Solicitação</h2>
     <p class="text-sm text-gray-600 mt-2">Escola: <span class="font-semibold">{solicitacao.school.name}</span></p>
@@ -71,7 +114,7 @@
     {#if itemsAnalisados.length === 0}
       <p class="text-sm text-gray-500 italic">Esta solicitação não contém itens.</p>
     {:else}
-      <div class="space-y-4 max-h-60 overflow-y-auto pr-2 border rounded-lg p-4 bg-gray-50 shadow-inner">
+      <div class="space-y-4 max-h-96 overflow-y-auto pr-2 border rounded-lg p-4 bg-gray-50 shadow-inner">
         {#each itemsAnalisados as item, index (item.itemId)}
           <div class="grid grid-cols-5 gap-4 items-center border-b pb-4 last:border-b-0">
             <div class="col-span-2">
@@ -103,7 +146,7 @@
   </div>
 
   <div>
-    <label for="observacao" class="block text-sm font-semibold text-gray-700 mb-1">Observações da Prefeitura (Opcional)</label>
+    <label for="observacao" class="block text-sm font-semibold text-gray-700 mb-1">Observações da Prefeitura (Obrigatório se negar)</label>
     <textarea
       id="observacao"
       rows="3"
@@ -113,7 +156,8 @@
     ></textarea>
   </div>
 
-  <div class="mt-8 flex justify-end space-x-4 border-t pt-6">
+  <div class="mt-8 flex justify-between items-center space-x-4 border-t pt-6">
+    
     <button
       type="button"
       on:click={() => dispatch('cancel')}
@@ -121,12 +165,26 @@
     >
       Cancelar
     </button>
-    <button
-      type="submit"
-      class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105"
-      disabled={itemsAnalisados.length === 0}
-    >
-      Salvar Análise
-    </button>
+
+    <div class="flex space-x-4">
+      <button
+        type="button"
+        on:click={handleNegar}
+        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105"
+        disabled={itemsAnalisados.length === 0}
+      >
+        Negar Solicitação
+      </button>
+      
+      {#if totalApproved > 0}
+        <button
+          type="submit" 
+          class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105"
+          disabled={itemsAnalisados.length === 0}
+        >
+          Aprovar Solicitação
+        </button>
+      {/if}
+    </div>
   </div>
 </form>

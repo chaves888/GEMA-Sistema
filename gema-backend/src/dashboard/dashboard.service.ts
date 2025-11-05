@@ -9,23 +9,23 @@ import { Product } from 'src/products/entities/product.entity';
 import { Solicitacao, SolicitacaoStatus } from 'src/solicitacoes/entities/solicitacao.entity';
 import { User, UserProfile } from 'src/users/entities/user.entity';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
-// --- Interface ATUALIZADA ---
-// A estrutura interna dos itens críticos agora vem do EstoqueService
+interface SchoolStockItemSummary {
+  product: Product;
+  quantity: number;
+  minStock: number;
+  status: string;
+  percentage: number;
+}
+
 interface SchoolStockSummary {
   schoolId: string;
   schoolName: string;
-  criticalItems: Array<{ // Estrutura retornada por EstoqueService
-    product: Product;
-    quantity: number;
-    minStock: number; // Este minStock agora é o product.minStockEscola
-    status: string;
-    percentage: number;
-  }>;
+  city: string; 
+  criticalItemsCount: number; 
+  criticalItems: SchoolStockItemSummary[]; 
 }
-// --- FIM ATUALIZAÇÃO ---
-
 
 @Injectable()
 export class DashboardService {
@@ -55,16 +55,15 @@ export class DashboardService {
     }
   }
 
-  // --- Lógica de getPrefeituraData e getEscolaData não precisa mudar ---
-  // Elas já dependem da resposta do EstoqueService, que nós acabamos de corrigir.
-  // A estrutura (status, percentage, minStock) retornada pelo EstoqueService continua a mesma,
-  // apenas o *valor* de minStock e o cálculo do status mudaram internamente no EstoqueService.
-
   private async getPrefeituraData() {
     const totalUsers = await this.userRepository.count();
     const totalEscolas = await this.escolaRepository.count();
     const pendingSolicitacoes = await this.solicitacaoRepository.count({
       where: { status: SolicitacaoStatus.PENDENTE },
+    });
+    
+    const publishedCardapios = await this.cardapioRepository.count({
+      where: { status: CardapioStatus.PUBLICADO }
     });
 
     const fullStockPrefeitura = await this.estoqueService.getPrefeituraEstoque();
@@ -72,19 +71,24 @@ export class DashboardService {
       item => item.status === 'Crítico' || item.status === 'Médio'
     );
 
-    const allEscolas = await this.escolaRepository.find({ order: { name: 'ASC' } });
+    const allEscolas = await this.escolaRepository.find({ 
+      order: { name: 'ASC' },
+      relations: ['city'] 
+    });
+    
     const schoolStockSummaries: SchoolStockSummary[] = [];
 
     for (const escola of allEscolas) {
       const fullStockEscola = await this.estoqueService.getEscolaEstoque(escola.id);
       const criticalItemsEscola = fullStockEscola
-        .filter(item => item.status === 'Crítico' || item.status === 'Médio')
-        .slice(0, 15);
+        .filter(item => item.status === 'Crítico' || item.status === 'Médio');
 
       schoolStockSummaries.push({
         schoolId: escola.id,
         schoolName: escola.name,
-        criticalItems: criticalItemsEscola, // Esta estrutura agora bate com a Interface
+        city: escola.city?.name || 'Sem cidade', 
+        criticalItemsCount: criticalItemsEscola.length, 
+        criticalItems: criticalItemsEscola, 
       });
     }
 
@@ -93,8 +97,9 @@ export class DashboardService {
         users: totalUsers,
         schools: totalEscolas,
         pendingSolicitacoes: pendingSolicitacoes,
+        publishedCardapios: publishedCardapios, 
       },
-      criticalStockPrefeitura: criticalStockPrefeitura.slice(0, 15),
+      criticalStockPrefeitura: criticalStockPrefeitura, 
       schoolStocks: schoolStockSummaries,
     };
   }
@@ -103,11 +108,14 @@ export class DashboardService {
   private async getEscolaData(user: User) {
     if (!user.school?.id) return { error: 'Usuário não associado a uma escola.' };
     const schoolId = user.school.id;
+    
     const recentSolicitacoes = await this.solicitacaoRepository.find({
-      where: { school: { id: schoolId } }, order: { createdAt: 'DESC' }, take: 5, select: ['id', 'createdAt', 'status'],
+      where: { school: { id: schoolId } }, 
+      order: { createdAt: 'DESC' }, 
+      take: 10, // Limite de 10
+      select: ['id', 'createdAt', 'status'],
     });
     
-    // EstoqueService agora usa product.minStockEscola para calcular status/percentage
     const fullStock = await this.estoqueService.getEscolaEstoque(schoolId);
     const criticalStockItems = fullStock.filter(item => item.status === 'Crítico' || item.status === 'Médio');
 
@@ -116,15 +124,51 @@ export class DashboardService {
       where: { status: CardapioStatus.PUBLICADO, startDate: LessThanOrEqual(today), endDate: MoreThanOrEqual(today), },
       select: ['id', 'name', 'startDate', 'endDate'],
     });
-    return { recentSolicitacoes, criticalStock: criticalStockItems.slice(0, 5), currentCardapio, };
+
+    const pendingSolicitacoesCount = await this.solicitacaoRepository.count({
+      where: { school: { id: schoolId }, status: SolicitacaoStatus.PENDENTE }
+    });
+    const criticalStockCount = criticalStockItems.length;
+
+    // --- NOVO ---
+    const publishedCardapiosCount = await this.cardapioRepository.count({
+      where: { status: CardapioStatus.PUBLICADO }
+    });
+    // --- FIM NOVO ---
+
+    return {
+      stats: {
+        criticalStock: criticalStockCount,
+        pendingSolicitacoes: pendingSolicitacoesCount,
+        publishedCardapios: publishedCardapiosCount, // <-- ADICIONADO
+      },
+      recentSolicitacoes,
+      criticalStock: criticalStockItems, 
+      currentCardapio,
+    };
   }
 
   private async getNutricionistaData() {
     const draftCardapios = await this.cardapioRepository.find({
-      where: { status: CardapioStatus.RASCUNHO }, order: { createdAt: 'DESC' }, take: 5, select: ['id', 'name', 'startDate', 'endDate', 'createdAt'],
+      where: { status: CardapioStatus.RASCUNHO }, 
+      order: { createdAt: 'DESC' }, 
+      select: ['id', 'name', 'startDate', 'endDate', 'createdAt'],
     });
-    return { draftCardapios, };
+
+    const draftCount = draftCardapios.length;
+    const publishedCount = await this.cardapioRepository.count({
+      where: { status: CardapioStatus.PUBLICADO }
+    });
+
+    return {
+      stats: {
+        draftCardapios: draftCount,
+        publishedCardapios: publishedCount,
+      },
+      draftCardapios, 
+    };
   }
+
   private async getCozinheiraData(user: User) {
     if (!user.school?.id) return { error: 'Usuário não associado a uma escola.' };
     const today = format(new Date(), 'yyyy-MM-dd');

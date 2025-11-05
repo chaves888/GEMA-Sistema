@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import * as api from '$lib/api';
   import { PlusCircle, Trash2 } from 'lucide-svelte';
+  import { browser } from '$app/environment'; // <-- NOVO IMPORT
 
   type Product = { id: string; name: string; unit: string };
   type SolicitacaoItemForm = {
@@ -21,12 +22,21 @@
 
   const dispatch = createEventDispatcher();
 
+  // --- NOVO: FILTRO INTELIGENTE ---
+  // Filtra produtos que ainda não estão na lista 'items'
+  $: availableProducts = allProducts.filter(p => !items.some(item => item.productId === p.id));
+  
+  // Atualiza o select padrão quando a lista de disponíveis mudar
+  // (e garante que só rode no browser)
+  $: if (browser && availableProducts.length > 0 && !availableProducts.find(p => p.id === selectedProductId)) {
+    selectedProductId = availableProducts[0].id;
+  }
+  // --- FIM FILTRO ---
+
   onMount(async () => {
     try {
       allProducts = await api.get('products');
-      if (allProducts.length > 0) {
-        selectedProductId = allProducts[0].id;
-      }
+      // O 'selectedProductId' será definido pela lógica reativa acima
     } catch (e) {
       console.error('Erro ao carregar produtos:', e);
     } finally {
@@ -42,9 +52,11 @@
     const existingItemIndex = items.findIndex(item => item.productId === selectedProductId);
 
     if (existingItemIndex !== -1) {
+      // Se já existe, apenas soma a quantidade
       items[existingItemIndex].quantityRequested += selectedProductQuantity;
-      items = [...items];
+      items = [...items]; // Força a reatividade
     } else {
+      // Se não existe, adiciona novo
       items = [
         ...items,
         {
@@ -55,16 +67,18 @@
         },
       ];
     }
-    selectedProductQuantity = 1;
+    // Reseta a quantidade e deixa a lógica reativa cuidar do selectedProductId
+    selectedProductQuantity = 1; 
   }
 
   function removeItem(index: number) {
     items.splice(index, 1);
-    items = [...items];
+    items = [...items]; // Força a reatividade (e o filtro a recalcular)
   }
 
   function handleSubmit() {
     if (items.length === 0) {
+      // O usuário pediu para não mudar o estilo, então mantemos o alert
       alert('Adicione pelo menos um produto à solicitação.');
       return;
     }
@@ -97,6 +111,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
       <div class="md:col-span-2">
         <label for="productSelect" class="block text-sm font-semibold text-gray-700 mb-1">Produto</label>
+        
         <select
           id="productSelect"
           bind:value={selectedProductId}
@@ -107,8 +122,10 @@
             <option value="">Carregando produtos...</option>
           {:else if allProducts.length === 0}
             <option value="">Nenhum produto cadastrado</option>
+          {:else if availableProducts.length === 0}
+            <option value="">Todos os produtos já foram adicionados</option>
           {:else}
-            {#each allProducts as product (product.id)}
+            {#each availableProducts as product (product.id)}
               <option value={product.id}>{product.name} ({product.unit})</option>
             {/each}
           {/if}
@@ -130,7 +147,7 @@
     <button
       type="button"
       on:click={addProductToRequest}
-      disabled={isLoadingProducts || allProducts.length === 0 || !selectedProductId}
+      disabled={isLoadingProducts || availableProducts.length === 0 || !selectedProductId}
       class="mt-4 inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <PlusCircle class="w-5 h-5" /> Adicionar Item

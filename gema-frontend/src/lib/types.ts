@@ -1,5 +1,3 @@
-// src/lib/types.ts
-
 // --- Tipo Genérico de Produto ---
 export type Product = {
   id: string;
@@ -21,9 +19,10 @@ export type Solicitacao = {
   id: string; 
   createdAt: string; 
   updatedAt: string; 
-  status: 'pendente' | 'aprovado' | 'aprovado_parcialmente' | 'negado' | 'recebido'; 
+  status: 'pendente' | 'aprovado' | 'aprovado_parcialmente' | 'negado' | 'recebido' | 'cancelado' | 'recebido_divergente'; 
   justificativa: string | null; 
   observacaoPrefeitura: string | null; 
+  observacaoEscola: string | null; 
   school: { id: string; name: string; };
   requester: { id: string; name: string; };
   items: SolicitacaoItem[]; 

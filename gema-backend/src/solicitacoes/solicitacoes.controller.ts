@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserProfile, User } from 'src/users/entities/user.entity';
 import { Request } from 'express';
+import { CancelSolicitacaoDto } from './dto/cancel-solicitacao.dto'; // <-- NOVO IMPORT
 
 interface RequestWithUser extends Request { user: User; }
 
@@ -33,14 +34,22 @@ export class SolicitacoesController {
     return this.solicitacoesService.findAll(req.user);
   }
 
+  // --- ROTA PARA CONTAGEM (PREFEITURA) --- (NOVO)
+  // (IMPORTANTE: Deve vir antes da rota /:id)
+  @Get('pendentes/count')
+  @Roles(UserProfile.PREFEITURA)
+  getPendentesCount() {
+    return this.solicitacoesService.getPendentesCount();
+  }
+
   // --- ROTA PARA VER DETALHES DE UMA SOLICITAÇÃO ---
   @Get(':id')
   @Roles(UserProfile.PREFEITURA, UserProfile.ESCOLA) // Ambos podem ver detalhes
   findOne(@Param('id', ParseUUIDPipe) id: string) { 
-     return this.solicitacoesService.findOne(id);
+    return this.solicitacoesService.findOne(id);
   }
 
-  // --- ROTAS A SEREM IMPLEMENTADAS DEPOIS ---
+  // --- ROTAS DE AÇÃO ---
 
   @Patch(':id/analisar')
   @Roles(UserProfile.PREFEITURA)
@@ -58,10 +67,21 @@ export class SolicitacoesController {
     return this.solicitacoesService.confirmRecebimento(id, confirmDto, req.user);
   }
 
+  // --- ROTA DE CANCELAMENTO (ESCOLA) --- (NOVO)
+  @Patch(':id/cancelar')
+  @Roles(UserProfile.ESCOLA)
+  cancelar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() cancelDto: CancelSolicitacaoDto,
+    @Req() req: RequestWithUser
+  ) {
+    return this.solicitacoesService.cancelar(id, req.user, cancelDto);
+  }
+
   @Delete(':id')
   @Roles(UserProfile.PREFEITURA) 
   @HttpCode(204)
   remove(@Param('id', ParseUUIDPipe) id: string) {
-     return this.solicitacoesService.remove(id);
+    return this.solicitacoesService.remove(id);
   }
 }

@@ -2,10 +2,13 @@
   import { createEventDispatcher } from 'svelte';
   import type { Solicitacao } from '$lib/types';
   import { format } from 'date-fns';
-    import { toast } from '$lib/toast';
+  import { toast } from '$lib/toast';
 
   export let solicitacao: Solicitacao;
 
+  let comDivergencia: boolean = false;
+  let observacaoEscola: string = '';
+  
   let itemsParaConfirmar = solicitacao.items
     .filter(item => item.quantityApproved && item.quantityApproved > 0)
     .map(item => ({
@@ -18,6 +21,16 @@
 
   const dispatch = createEventDispatcher();
 
+  let hasQuantityDivergence = false;
+  
+  $: hasQuantityDivergence = itemsParaConfirmar.some(
+      item => (item.quantityReceived ?? 0) !== (item.quantityApproved ?? 0)
+  );
+  
+  $: if (hasQuantityDivergence) {
+      comDivergencia = true;
+  }
+
   function handleSubmit() {
     const invalidItems = itemsParaConfirmar.filter(
       item => (item.quantityReceived ?? 0) > (item.quantityApproved ?? 0)
@@ -27,11 +40,18 @@
       return;
     }
 
+    if (comDivergencia && !observacaoEscola) {
+      toast.error('A observação é obrigatória ao receber com divergência.');
+      return;
+    }
+
     dispatch('save', {
       items: itemsParaConfirmar.map(item => ({
         itemId: item.itemId,
         quantityReceived: item.quantityReceived ?? 0,
       })),
+      comDivergencia: comDivergencia,
+      observacaoEscola: comDivergencia ? observacaoEscola : undefined
     });
   }
 </script>
@@ -56,7 +76,7 @@
     {#if itemsParaConfirmar.length === 0}
       <p class="text-gray-500 text-sm">Nenhum item foi aprovado com quantidade maior que zero.</p>
     {:else}
-      <div class="space-y-4 max-h-60 overflow-y-auto pr-2 border rounded-lg p-4 bg-gray-50 shadow-inner">
+      <div class="space-y-4 max-h-96 overflow-y-auto pr-2 border rounded-lg p-4 bg-gray-50 shadow-inner">
         {#each itemsParaConfirmar as item, index (item.itemId)}
           <div class="grid grid-cols-3 gap-4 items-center border-b pb-4 last:border-b-0">
             <div class="col-span-1">
@@ -83,6 +103,42 @@
             </div>
           </div>
         {/each}
+      </div>
+    {/if}
+  </div>
+
+  <div class="space-y-4 border-t pt-5 mt-5">
+    <div class="flex items-center">
+      <input
+        type="checkbox"
+        id="comDivergencia"
+        bind:checked={comDivergencia}
+        disabled={hasQuantityDivergence}
+        class="h-5 w-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-70 disabled:cursor-not-allowed"
+      />
+      <label for="comDivergencia" class="ml-3 block text-md font-semibold text-gray-800">
+        Recebido com Divergência?
+      </label>
+    </div>
+
+    {#if hasQuantityDivergence}
+      <p class="-mt-3 ml-8 text-sm text-orange-600 font-medium">
+        (Marcado automaticamente por diferença de quantidade)
+      </p>
+    {/if}
+
+    {#if comDivergencia}
+      <div>
+        <label for="observacaoEscola" class="block text-sm font-semibold text-gray-700 mb-1">
+          Descreva a Divergência (Obrigatório)
+        </label>
+        <textarea
+          id="observacaoEscola"
+          rows="3"
+          class="mt-1 w-full rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-400 shadow-sm px-4 py-2 transition"
+          bind:value={observacaoEscola}
+          placeholder="Ex: Veio 2kg de arroz a menos (recebi 8kg de 10kg aprovados)."
+        ></textarea>
       </div>
     {/if}
   </div>

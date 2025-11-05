@@ -1,4 +1,3 @@
-// src/solicitacoes/entities/solicitacao.entity.ts
 import { Escola } from 'src/escolas/entities/escola.entity';
 import { User } from 'src/users/entities/user.entity';
 import { 
@@ -7,16 +6,17 @@ import {
 } from 'typeorm';
 import { SolicitacaoItem } from './solicitacao-item.entity';
 
-// Status baseado no seu fluxo
 export enum SolicitacaoStatus {
   PENDENTE = 'pendente',
   APROVADO = 'aprovado',
   APROVADO_PARCIALMENTE = 'aprovado_parcialmente',
   NEGADO = 'negado',
   RECEBIDO = 'recebido',
+  CANCELADO = 'cancelado',
+  RECEBIDO_COM_DIVERGENCIA = 'recebido_divergente', 
 }
 
-@Entity('solicitacoes') // Nome da tabela no banco
+@Entity('solicitacoes') 
 export class Solicitacao {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -39,6 +39,9 @@ export class Solicitacao {
 
   @Column({ type: 'text', nullable: true, name: 'observacao_prefeitura' })
   observacaoPrefeitura: string | null; 
+
+  @Column({ type: 'text', nullable: true, name: 'observacao_escola' })
+  observacaoEscola: string | null; 
 
   @ManyToOne(() => Escola, { eager: true, onDelete: 'RESTRICT' }) 
   @JoinColumn({ name: 'school_id' })
