@@ -365,7 +365,7 @@
       <div class="space-y-2">
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{cardapio.name}</h1>
         <p class="text-sm text-gray-400">
-          Criado por: <span class="font-medium text-gray-600">{cardapio.createdBy?.name || 'N/A'}</span>
+          Criado por: <span class="font-medium text-gray-600">{cardapio.createdBy?.name || '(Usuário Excluído)'}</span>
         </p>
         <span
           class="inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm {cardapio.status ===

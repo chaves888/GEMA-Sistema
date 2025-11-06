@@ -4,31 +4,37 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import UserForm from '$lib/components/UserForm.svelte';
 	import { session } from '$lib/sessionStore';
-
-	// 1. IMPORTAR O TOAST E O DIÁLOGO DE CONFIRMAÇÃO
 	import { toast } from '$lib/toast';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import { ShieldOff, ShieldCheck } from 'lucide-svelte'; // Ícones para os botões
 
+	// --- 1. TIPO USER ATUALIZADO ---
 	type User = {
 		id: string;
 		name: string;
 		email: string;
 		profile: string;
+		isActive: boolean; // <-- Adicionado
 		school?: { id: string; name: string };
 	};
 
 	let users: User[] = [];
 	let isLoading = true;
+	let isActionLoading = false; // Bloqueia botões durante uma ação
 	let error: string | null = null;
 
 	let showModal = false;
 	let isEditing = false;
 	let currentUser: any = {};
 
-	// 2. ESTADO PARA O MODAL DE CONFIRMAÇÃO
+	// --- 2. ESTADO DO MODAL DE CONFIRMAÇÃO GENÉRICO ---
 	let showConfirmModal = false;
-	let userToDelete: User | null = null;
+	let confirmTitle = '';
 	let confirmMessage = '';
+	let confirmButtonText = '';
+	// Armazena a *função* que deve ser executada ao confirmar
+	let confirmAction: (() => Promise<void>) | null = null;
+	// --- FIM DA ATUALIZAÇÃO DO ESTADO ---
 
 	onMount(async () => {
 		try {
@@ -49,21 +55,23 @@
 
 	function openEditModal(user: User) {
 		isEditing = true;
+		// O 'isActive' não é editável no formulário, mas o objeto está completo
 		currentUser = { ...user, password: '', schoolId: user.school?.id };
 		showModal = true;
 	}
 
 	async function handleSave(event: any) {
 		const userToSave = event.detail;
-		
-		// Validação de nome vazio (igual fizemos em produtos)
+		isActionLoading = true;
+
 		const trimmedName = userToSave.name ? userToSave.name.trim() : '';
 		if (trimmedName === '') {
-			toast.error('O nome do usuário não pode estar vazio ou conter apenas espaços.');
-			return; 
+			toast.error('O nome do usuário não pode estar vazio.');
+			isActionLoading = false;
+			return;
 		}
 		userToSave.name = trimmedName;
-		
+
 		if (isEditing && !userToSave.password) {
 			delete userToSave.password;
 		}
@@ -72,63 +80,105 @@
 			if (isEditing) {
 				const updatedUser = await api.patch(`users/${userToSave.id}`, userToSave);
 				users = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
-				// 3. SUBSTITUIR ALERT POR TOAST
 				toast.success('Usuário atualizado com sucesso!');
 			} else {
 				const newUser = await api.post('users', userToSave);
 				users = [...users, newUser];
-				// 3. SUBSTITUIR ALERT POR TOAST
 				toast.success('Usuário criado com sucesso!');
 			}
 			showModal = false;
 		} catch (e: any) {
-			// 3. SUBSTITUIR ALERT POR TOAST
 			const errorMessage = e?.message || 'Erro ao salvar o usuário.';
 			toast.error(errorMessage);
 			console.error(e);
+		} finally {
+			isActionLoading = false;
 		}
 	}
 
-	// 4. FUNÇÃO PARA ABRIR O DIÁLOGO DE CONFIRMAÇÃO
-	function openConfirmDeleteModal(user: User) {
-		// Não podemos deixar o usuário se auto-excluir
+	// --- 3. FUNÇÕES DE AÇÃO (ATIVAR, DESATIVAR, EXCLUIR) ---
+
+	async function handleActivateUser(user: User) {
+		isActionLoading = true;
+		try {
+			const updatedUser = await api.patch(`users/${user.id}/activate`, {});
+			users = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+			toast.success(`Usuário "${user.name}" ativado.`);
+		} catch (e: any) {
+			toast.error(e?.message || 'Erro ao ativar usuário.');
+		} finally {
+			isActionLoading = false;
+		}
+	}
+
+	async function handleDeactivateUser(user: User) {
+		isActionLoading = true;
+		try {
+			const updatedUser = await api.patch(`users/${user.id}/deactivate`, {});
+			users = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+			// Correção: Trocado de 'warning' para 'info'
+			toast.info(`Usuário "${user.name}" desativado.`);
+		} catch (e: any) {
+			toast.error(e?.message || 'Erro ao desativar usuário.');
+		} finally {
+			isActionLoading = false;
+		}
+	}
+
+	async function handleDeleteUser(user: User) {
+		isActionLoading = true;
+		try {
+			await api.del(`users/${user.id}`);
+			users = users.filter((u) => u.id !== user.id);
+			toast.success(`Usuário "${user.name}" excluído.`);
+		} catch (e: any) {
+			toast.error(e?.message || 'Falha ao excluir o usuário.');
+		} finally {
+			isActionLoading = false;
+		}
+	}
+
+	// --- 4. FUNÇÕES DO MODAL DE CONFIRMAÇÃO ---
+
+	function openConfirmModal(user: User, action: 'delete' | 'activate' | 'deactivate') {
 		if (user.id === $session.id) {
-			toast.error('Você não pode excluir o seu próprio usuário.');
+			toast.error('Você não pode alterar seu próprio usuário.');
 			return;
 		}
-		
-		userToDelete = user;
-		confirmMessage = `Tem certeza que deseja excluir o usuário "${user.name}"?`;
+		if (isActionLoading) return;
+
+		if (action === 'delete') {
+			confirmTitle = 'Excluir Usuário';
+			confirmMessage = `Tem certeza que deseja excluir o usuário "${user.name}"? Esta ação é irreversível.`;
+			confirmButtonText = 'Sim, Excluir';
+			confirmAction = () => handleDeleteUser(user);
+		} else if (action === 'activate') {
+			confirmTitle = 'Ativar Usuário';
+			confirmMessage = `Tem certeza que deseja ativar o usuário "${user.name}"? Ele poderá fazer login novamente.`;
+			confirmButtonText = 'Sim, Ativar';
+			confirmAction = () => handleActivateUser(user);
+		} else if (action === 'deactivate') {
+			confirmTitle = 'Desativar Usuário';
+			confirmMessage = `Tem certeza que deseja desativar o usuário "${user.name}"? Ele não poderá mais fazer login.`;
+			confirmButtonText = 'Sim, Desativar';
+			confirmAction = () => handleDeactivateUser(user);
+		}
 		showConfirmModal = true;
 	}
 
-	// 5. FUNÇÃO CHAMADA PELO MODAL PARA EXECUTAR A EXCLUSÃO
-	async function handleConfirmDelete() {
-		if (!userToDelete) return;
-		
-		const idToDelete = userToDelete.id;
-
-		// Fecha o modal e limpa o estado
-		showConfirmModal = false;
-		userToDelete = null;
-
-		try {
-			await api.del(`users/${idToDelete}`);
-			users = users.filter((user) => user.id !== idToDelete);
-			// 3. SUBSTITUIR ALERT POR TOAST
-			toast.success('Usuário excluído com sucesso!');
-		} catch (e: any) {
-			// 3. SUBSTITUIR ALERT POR TOAST
-			const errorMessage = e?.message || 'Falha ao excluir o usuário.';
-			toast.error(errorMessage);
-			console.error(e);
+	async function handleConfirm() {
+		if (confirmAction) {
+			await confirmAction();
 		}
+		cancelConfirmModal();
 	}
 
-	// 6. FUNÇÃO PARA CANCELAR A EXCLUSÃO
-	function onCancelDelete() {
+	function cancelConfirmModal() {
 		showConfirmModal = false;
-		userToDelete = null;
+		confirmTitle = '';
+		confirmMessage = '';
+		confirmButtonText = '';
+		confirmAction = null;
 	}
 </script>
 
@@ -147,7 +197,8 @@
 
 		<button
 			on:click={openAddModal}
-			class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95"
+			disabled={isActionLoading}
+			class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50"
 		>
 			+ Novo Usuário
 		</button>
@@ -197,6 +248,11 @@
 						>
 						<th
 							scope="col"
+							class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+							>Status</th
+						>
+						<th
+							scope="col"
 							class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
 							>Ações</th
 						>
@@ -215,20 +271,61 @@
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
 								>{user.school?.name || 'N/A'}</td
 							>
-							<td
-								class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4"
-							>
+							<td class="px-6 py-4 whitespace-nowrap text-sm">
+								{#if user.isActive}
+									<span
+										class="px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800"
+									>
+										Ativo
+									</span>
+								{:else}
+									<span
+										class="px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-600"
+									>
+										Inativo
+									</span>
+								{/if}
+							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
 								<button
 									on:click={() => openEditModal(user)}
-									class="text-primary-600 hover:text-primary-800 font-semibold transition-colors"
+									class="text-primary-600 hover:text-primary-800 font-semibold transition-colors disabled:opacity-50"
+									disabled={isActionLoading}
 								>
 									Editar
 								</button>
+
+								{#if user.isActive}
+									<button
+										on:click={() => openConfirmModal(user, 'deactivate')}
+										class="text-yellow-600 hover:text-yellow-800 font-semibold transition-colors disabled:opacity-50"
+										disabled={isActionLoading || user.id === $session.id}
+										title={user.id === $session.id
+											? 'Não pode desativar a si mesmo'
+											: 'Desativar usuário'}
+									>
+										Desativar
+									</button>
+								{:else}
+									<button
+										on:click={() => openConfirmModal(user, 'activate')}
+										class="text-green-600 hover:text-green-800 font-semibold transition-colors disabled:opacity-50"
+										disabled={isActionLoading || user.id === $session.id}
+										title={user.id === $session.id
+											? 'Não pode ativar a si mesmo'
+											: 'Ativar usuário'}
+									>
+										Ativar
+									</button>
+								{/if}
+
 								<button
-									on:click={() => openConfirmDeleteModal(user)}
-									class="text-red-600 hover:text-red-800 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-red-600"
-									disabled={user.id === $session.id}
-									title={user.id === $session.id ? 'Você não pode excluir a si mesmo' : ''}
+									on:click={() => openConfirmModal(user, 'delete')}
+									class="text-red-600 hover:text-red-800 font-semibold transition-colors disabled:opacity-50"
+									disabled={isActionLoading || user.id === $session.id}
+									title={user.id === $session.id
+										? 'Você não pode excluir a si mesmo'
+										: 'Excluir usuário'}
 								>
 									Excluir
 								</button>
@@ -250,13 +347,13 @@
 	/>
 </Modal>
 
-<Modal show={showConfirmModal} on:close={onCancelDelete} size="max-w-md">
+<Modal show={showConfirmModal} on:close={cancelConfirmModal} size="max-w-md">
 	<ConfirmDialog
-		title="Excluir Usuário"
+		title={confirmTitle}
 		message={confirmMessage}
-		confirmText="Sim, Excluir"
-		on:confirm={handleConfirmDelete}
-		on:cancel={onCancelDelete}
+		confirmText={confirmButtonText}
+		on:confirm={handleConfirm}
+		on:cancel={cancelConfirmModal}
 	/>
 </Modal>
 
@@ -271,15 +368,12 @@
 			transform: scale(1);
 		}
 	}
-
 	.animate-fadeIn {
 		animation: fadeIn 0.25s ease-out;
 	}
-
 	th:first-child {
 		border-top-left-radius: 1rem;
 	}
-
 	th:last-child {
 		border-top-right-radius: 1rem;
 	}

@@ -230,7 +230,7 @@
             </span>
             <h3 class="font-bold text-lg text-gray-800 truncate">{cardapio.name}</h3>
             <p class="text-xs text-gray-400 mt-3">
-              👩‍🍳 Criado por {cardapio.createdBy?.name || 'N/A'}
+              👩‍🍳 Criado por {cardapio.createdBy?.name || '(Usuário Excluído)'}
             </p>
           </div>
           <div
