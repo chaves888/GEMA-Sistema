@@ -19,4 +19,6 @@ export class CreateProductDto {
   @Min(0)
   minStockEscola: number;
   // --- FIM DA MUDANÇA ---
+
+  
 }

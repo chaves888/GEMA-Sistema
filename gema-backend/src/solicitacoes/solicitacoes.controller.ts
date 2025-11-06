@@ -20,68 +20,67 @@ export class SolicitacoesController {
 
   // --- ROTA DE CRIAÇÃO (ESCOLA) ---
   @Post()
-  @Roles(UserProfile.ESCOLA)
-  create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() req: RequestWithUser) {
-    // Passa o DTO e o usuário logado para o serviço criar a solicitação
-    return this.solicitacoesService.create(createSolicitacaoDto, req.user);
-  }
+	@Roles(UserProfile.ESCOLA)
+	create(@Body() createSolicitacaoDto: CreateSolicitacaoDto, @Req() req: RequestWithUser) {
+		return this.solicitacoesService.create(createSolicitacaoDto, req.user);
+	}
 
-  // --- ROTA DE LISTAGEM (ESCOLA E PREFEITURA) ---
-  @Get()
-  @Roles(UserProfile.PREFEITURA, UserProfile.ESCOLA) 
-  findAll(@Req() req: RequestWithUser) {
-    // Passa o usuário logado para o serviço filtrar a lista corretamente
-    return this.solicitacoesService.findAll(req.user);
-  }
+	@Get()
+	@Roles(UserProfile.PREFEITURA, UserProfile.ESCOLA)
+	findAll(@Req() req: RequestWithUser) {
+		return this.solicitacoesService.findAll(req.user);
+	}
 
-  // --- ROTA PARA CONTAGEM (PREFEITURA) --- (NOVO)
-  // (IMPORTANTE: Deve vir antes da rota /:id)
-  @Get('pendentes/count')
-  @Roles(UserProfile.PREFEITURA)
-  getPendentesCount() {
-    return this.solicitacoesService.getPendentesCount();
-  }
+	@Get('pendentes/count')
+	@Roles(UserProfile.PREFEITURA)
+	getPendentesCount() {
+		return this.solicitacoesService.getPendentesCount();
+	}
 
-  // --- ROTA PARA VER DETALHES DE UMA SOLICITAÇÃO ---
-  @Get(':id')
-  @Roles(UserProfile.PREFEITURA, UserProfile.ESCOLA) // Ambos podem ver detalhes
-  findOne(@Param('id', ParseUUIDPipe) id: string) { 
-    return this.solicitacoesService.findOne(id);
-  }
+	@Get(':id')
+	@Roles(UserProfile.PREFEITURA, UserProfile.ESCOLA)
+	findOne(@Param('id', ParseUUIDPipe) id: string) {
+		return this.solicitacoesService.findOne(id);
+	}
 
-  // --- ROTAS DE AÇÃO ---
 
-  @Patch(':id/analisar')
-  @Roles(UserProfile.PREFEITURA)
-  analyze(@Param('id', ParseUUIDPipe) id: string, @Body() analyzeDto: AnalyzeSolicitacaoDto) {
-    return this.solicitacoesService.analyze(id, analyzeDto);
-  }
+	// --- ROTA ANALYZE MODIFICADA ---
+	@Patch(':id/analisar')
+	@Roles(UserProfile.PREFEITURA)
+	analyze(
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() analyzeDto: AnalyzeSolicitacaoDto,
+		@Req() req: RequestWithUser, // <-- ADICIONADO: Pegar o usuário logado
+	) {
+		// Passa o usuário logado (req.user) para o serviço
+		return this.solicitacoesService.analyze(id, analyzeDto, req.user); 
+	}
+	// --- FIM DA MODIFICAÇÃO ---
 
-  @Patch(':id/confirmar')
-  @Roles(UserProfile.ESCOLA) 
-  confirmRecebimento(
-    @Param('id', ParseUUIDPipe) id: string, 
-    @Body() confirmDto: ConfirmRecebimentoDto,
-    @Req() req: RequestWithUser 
-  ) {
-    return this.solicitacoesService.confirmRecebimento(id, confirmDto, req.user);
-  }
+	@Patch(':id/confirmar')
+	@Roles(UserProfile.ESCOLA)
+	confirmRecebimento(
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() confirmDto: ConfirmRecebimentoDto,
+		@Req() req: RequestWithUser,
+	) {
+		return this.solicitacoesService.confirmRecebimento(id, confirmDto, req.user);
+	}
 
-  // --- ROTA DE CANCELAMENTO (ESCOLA) --- (NOVO)
-  @Patch(':id/cancelar')
-  @Roles(UserProfile.ESCOLA)
-  cancelar(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() cancelDto: CancelSolicitacaoDto,
-    @Req() req: RequestWithUser
-  ) {
-    return this.solicitacoesService.cancelar(id, req.user, cancelDto);
-  }
+	@Patch(':id/cancelar')
+	@Roles(UserProfile.ESCOLA)
+	cancelar(
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() cancelDto: CancelSolicitacaoDto,
+		@Req() req: RequestWithUser,
+	) {
+		return this.solicitacoesService.cancelar(id, req.user, cancelDto);
+	}
 
-  @Delete(':id')
-  @Roles(UserProfile.PREFEITURA) 
-  @HttpCode(204)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.solicitacoesService.remove(id);
-  }
+	@Delete(':id')
+	@Roles(UserProfile.PREFEITURA)
+	@HttpCode(204)
+	remove(@Param('id', ParseUUIDPipe) id: string) {
+		return this.solicitacoesService.remove(id);
+	}
 }

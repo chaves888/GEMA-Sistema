@@ -1,22 +1,37 @@
 // src/cidades/entities/cidade.entity.ts
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import {
+	Column,
+	DeleteDateColumn,
+	Entity,
+	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('cities')
 export class Cidade {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-  // --- MODIFICAÇÃO: 'name' não é mais unique ---
-  @Column()
-  name: string;
-  // --- FIM MODIFICAÇÃO ---
+	@Column()
+	name: string;
 
-  @Column({ length: 2 })
-  state: string;
+	@Column({ length: 2 })
+	state: string;
 
-  @Column({ type: 'varchar', length: 9, unique: true }) // CEP é obrigatório e único
-  cep: string;
+	// --- CORREÇÃO AQUI ---
+	@Column({ type: 'varchar', length: 9 }) // unique: true FOI REMOVIDO
+	cep: string;
+	// --- FIM DA CORREÇÃO ---
 
-  @Column({ type: 'varchar', nullable: true }) // Bairro é opcional
-  bairro: string | null;
+	@Column({ type: 'varchar', nullable: true })
+	bairro: string | null;
+
+	@DeleteDateColumn({ name: 'deleted_at' })
+	deletedAt: Date | null;
+
+	@ManyToOne(() => User, { nullable: true, eager: false })
+	@JoinColumn({ name: 'deleted_by_user_id' })
+	deletedBy: User | null;
 }

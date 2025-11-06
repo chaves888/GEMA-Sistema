@@ -46,7 +46,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
     <div>
       <span class="font-semibold text-gray-500">Escola:</span>
-      <span class="ml-2 text-gray-800 font-bold">{solicitacao.school.name}</span>
+      <span class="ml-2 text-gray-800 font-bold">{solicitacao.school?.name || '(Escola Excluída)'}</span>
     </div>
     <div>
       <span class="font-semibold text-gray-500">Data:</span>
@@ -115,8 +115,8 @@
           <tbody class="bg-white divide-y divide-gray-200">
             {#each solicitacao.items as item (item.id)}
               <tr class="hover:bg-gray-50">
-                <td class="px-5 py-3 whitespace-nowrap font-semibold text-gray-900">{item.product.name}</td>
-                <td class="px-5 py-3 whitespace-nowrap text-center text-gray-500">{item.product.unit}</td>
+                <td class="px-5 py-3 whitespace-nowrap font-semibold text-gray-900">{item.product?.name || '(Produto Excluído)'}</td>
+                <td class="px-5 py-3 whitespace-nowrap text-center text-gray-500">{item.product?.unit || '(N/A)'}</td>
                 <td class="px-5 py-3 whitespace-nowrap text-right text-gray-700 font-bold">{formatQuantity(item.quantityRequested)}</td>
                 <td class="px-5 py-3 whitespace-nowrap text-right text-blue-700 font-bold">{formatQuantity(item.quantityApproved)}</td>
                 <td class="px-5 py-3 whitespace-nowrap text-right text-green-700 font-bold">{formatQuantity(item.quantityReceived)}</td>

@@ -1,42 +1,52 @@
+// src/products/entities/product.entity.ts
+import { User } from 'src/users/entities/user.entity';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
+	Column,
+	CreateDateColumn,
+	DeleteDateColumn,
+	Entity,
+	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
 } from 'typeorm';
 
 export enum ProductUnit {
-  UNIDADE = 'UN'
+	UNIDADE = 'UN',
 }
 
 @Entity('products')
 export class Product {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-  @Column({ unique: true })
-  name: string;
+	// --- CORREÇÃO: 'unique: true' REMOVIDO ---
+	@Column()
+	name: string;
+	// --- FIM DA CORREÇÃO ---
 
-  @Column({
-    type: 'enum',
-    enum: ProductUnit,
-  })
-  unit: ProductUnit;
+	@Column({
+		type: 'enum',
+		enum: ProductUnit,
+	})
+	unit: ProductUnit;
 
-  // --- MUDANÇA AQUI ---
-  // Removemos o minStock único
+	@Column({ type: 'float', default: 0, name: 'min_stock_prefeitura' })
+	minStockPrefeitura: number;
 
-  @Column({ type: 'float', default: 0, name: 'min_stock_prefeitura' })
-  minStockPrefeitura: number;
+	@Column({ type: 'float', default: 0, name: 'min_stock_escola' })
+	minStockEscola: number;
 
-  @Column({ type: 'float', default: 0, name: 'min_stock_escola' })
-  minStockEscola: number;
-  // --- FIM DA MUDANÇA ---
+	@CreateDateColumn({ name: 'created_at' })
+	createdAt: Date;
 
-  @CreateDateColumn({ name: 'created_at'})
-  createdAt: Date;
+	@UpdateDateColumn({ name: 'updated_at' })
+	updatedAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at'})
-  updatedAt: Date;
+	@DeleteDateColumn({ name: 'deleted_at' })
+	deletedAt: Date | null;
+
+	@ManyToOne(() => User, { nullable: true, eager: false })
+	@JoinColumn({ name: 'deleted_by_user_id' })
+	deletedBy: User | null;
 }

@@ -463,7 +463,7 @@
                   </p>
                   <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
                     {#each refeicao.products as item (item.id)}
-                      <li>{item.name}</li>
+                      <li>{item?.name || '(Produto Excluído)' }</li>
                     {/each}
                   </ul>
                   {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'}
@@ -513,7 +513,7 @@
                   </p>
                   <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
                     {#each refeicao.products as item (item.id)}
-                      <li>{item.name}</li>
+                      <li>{item?.name || '(Produto Excluído)' }</li>
                     {/each}
                   </ul>
                   {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'}

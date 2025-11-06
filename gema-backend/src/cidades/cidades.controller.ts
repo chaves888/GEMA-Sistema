@@ -1,46 +1,55 @@
 // src/cidades/cidades.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode } from '@nestjs/common';
+import {
+	Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, Req, // 1. Importar Req
+} from '@nestjs/common';
 import { CidadesService } from './cidades.service';
 import { CreateCidadeDto } from './dto/create-cidade.dto';
 import { UpdateCidadeDto } from './dto/update-cidade.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { UserProfile } from 'src/users/entities/user.entity';
+import { User, UserProfile } from 'src/users/entities/user.entity'; // 2. Importar User
+import { Request } from 'express'; // 3. Importar Request
+
+// 4. Definir interface
+interface RequestWithUser extends Request {
+	user: User;
+}
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('cidades')
 export class CidadesController {
-  constructor(private readonly cidadesService: CidadesService) {}
+	constructor(private readonly cidadesService: CidadesService) {}
 
-  @Post()
-  @Roles(UserProfile.PREFEITURA)
-  create(@Body() createCidadeDto: CreateCidadeDto) {
-    return this.cidadesService.create(createCidadeDto);
-  }
+	@Post()
+	@Roles(UserProfile.PREFEITURA)
+	create(@Body() createCidadeDto: CreateCidadeDto) {
+		return this.cidadesService.create(createCidadeDto);
+	}
 
-  @Get()
-  // Todos os perfis logados podem ver as cidades
-  findAll() {
-    return this.cidadesService.findAll();
-  }
+	@Get()
+	findAll() {
+		return this.cidadesService.findAll();
+	}
 
-  @Get(':id')
-  @Roles(UserProfile.PREFEITURA)
-  findOne(@Param('id') id: string) {
-    return this.cidadesService.findOne(id);
-  }
+	@Get(':id')
+	@Roles(UserProfile.PREFEITURA)
+	findOne(@Param('id') id: string) {
+		return this.cidadesService.findOne(id);
+	}
 
-  @Patch(':id')
-  @Roles(UserProfile.PREFEITURA)
-  update(@Param('id') id: string, @Body() updateCidadeDto: UpdateCidadeDto) {
-    return this.cidadesService.update(id, updateCidadeDto);
-  }
+	@Patch(':id')
+	@Roles(UserProfile.PREFEITURA)
+	update(@Param('id') id: string, @Body() updateCidadeDto: UpdateCidadeDto) {
+		return this.cidadesService.update(id, updateCidadeDto);
+	}
 
-  @Delete(':id')
-  @Roles(UserProfile.PREFEITURA)
-  @HttpCode(204) // Retorna o status 'No Content' em caso de sucesso
-  remove(@Param('id') id: string) {
-    return this.cidadesService.remove(id);
-  }
+	// --- 5. ROTA REMOVE ATUALIZADA ---
+	@Delete(':id')
+	@Roles(UserProfile.PREFEITURA)
+	@HttpCode(204)
+	remove(@Param('id') id: string, @Req() req: RequestWithUser) { // Recebe @Req
+		// Passa o ID e o usuário logado
+		return this.cidadesService.remove(id, req.user);
+	}
 }

@@ -1,31 +1,39 @@
 // src/escolas/entities/escola.entity.ts
 import { Cidade } from 'src/cidades/entities/cidade.entity';
-import { 
-  Column, 
-  Entity, 
-  JoinColumn, 
-  ManyToOne, 
-  PrimaryGeneratedColumn 
+import { User } from 'src/users/entities/user.entity'; // 1. Importar User
+import {
+	Column,
+	DeleteDateColumn, // 2. Importar
+	Entity,
+	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('schools')
 export class Escola {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-  @Column()
-  name: string;
+	@Column()
+	name: string;
 
-  @Column({ nullable: true }) // Endereço é opcional
-  address: string;
+	@Column({ nullable: true })
+	address: string;
 
-  // --- NOVA COLUNA NÚMERO ---
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  numero: string | null;
-  // --- FIM NOVA COLUNA ---
+	@Column({ type: 'varchar', length: 50, nullable: true })
+	numero: string | null;
 
-  // --- RELACIONAMENTO AQUI ---
-  @ManyToOne(() => Cidade, { eager: true }) // eager: true -> sempre carrega a cidade junto
-  @JoinColumn({ name: 'city_id' }) // Nome da coluna do ID estrangeiro no banco
-  city: Cidade;
+	@ManyToOne(() => Cidade, { eager: true })
+	@JoinColumn({ name: 'city_id' })
+	city: Cidade;
+
+	// --- 3. CAMPOS ADICIONADOS ---
+	@DeleteDateColumn({ name: 'deleted_at' })
+	deletedAt: Date | null;
+
+	@ManyToOne(() => User, { nullable: true, eager: false })
+	@JoinColumn({ name: 'deleted_by_user_id' })
+	deletedBy: User | null;
+	// --- FIM DOS NOVOS CAMPOS ---
 }

@@ -94,7 +94,7 @@
       <img src={GemaLogo} alt="Logo GEMA" class="mx-auto h-28 w-auto mb-0 drop-shadow-md" />
       {#if view === 'login'}
         <h2 class="text-2xl font-bold">Bem-vindo</h2>
-        <p class="text-sm text-primary-100">Gerenciamento de Merenda e Alimentos</p>
+        <p class="text-sm text-primary-100">Gerenciamento Escolar de Merenda e Alimentos</p>
       {:else}
         <h2 class="text-2xl font-bold">Redefinir Senha</h2>
         <p class="text-sm text-primary-100">Insira seu e-mail para continuar</p>
