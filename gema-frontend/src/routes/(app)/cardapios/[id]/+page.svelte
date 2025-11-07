@@ -452,7 +452,7 @@
 
           <div class="flex flex-col divide-y flex-1">
             <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
-              <h4 class="font-semibold text-primary-700 flex items-center gap-1">☀️ Manhã</h4>
+              <h4 class="meal-header morning">☀️ Manhã</h4>
               {#if refeicoesGrid[dia]?.manha && !isHoliday}
                 {@const refeicao = refeicoesGrid[dia]['manha']}
                 <div
@@ -502,7 +502,7 @@
               {/if}
             </div>
             <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
-              <h4 class="font-semibold text-primary-700 flex items-center gap-1">🌇 Tarde (15h)</h4>
+              <h4 class="meal-header afternoon">🌇 Tarde (15h)</h4>
               {#if refeicoesGrid[dia]?.tarde && !isHoliday}
                 {@const refeicao = refeicoesGrid[dia]['tarde']}
                 <div
@@ -590,6 +590,32 @@
   />
 </Modal>
 <style>
+
+  .meal-header {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ☀️ Manhã */
+.meal-header.morning {
+  color: #92400e; /* amber-800 */
+  background: linear-gradient(to right, #fef3c7, #fde68a); /* amarelo suave */
+  border-left: 4px solid #f59e0b; /* amber-500 */
+}
+
+/* 🌇 Tarde */
+.meal-header.afternoon {
+  color: #7c2d12; /* orange-900 */
+  background: linear-gradient(to right, #ffedd5, #fed7aa); /* laranja suave */
+  border-left: 4px solid #fb923c; /* orange-400 */
+}
+
   @keyframes fadeIn {
     from {
       opacity: 0;

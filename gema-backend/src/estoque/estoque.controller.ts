@@ -1,4 +1,3 @@
-// src/estoque/estoque.controller.ts
 import {
 	Controller, Get, Body, Patch, UseGuards, Req, Param, ForbiddenException,
 	Post, UseInterceptors, UploadedFile, BadRequestException
@@ -9,11 +8,9 @@ import { AjustarEstoqueDto } from './dto/ajustar-estoque.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { User, UserProfile } from 'src/users/entities/user.entity';
+import { User, UserProfile } from 'src/users/entities/user.entity'; // Verifique se UserProfile está importado
 import { Request } from 'express';
-import 'multer'; // Mantenha isso
-// --- NOVO IMPORT ---
-import { ImportacaoResultado } from './dto/importar-estoque.dto';
+import 'multer'; // Para o tipo Express.Multer.File
 
 interface RequestWithUser extends Request {
 	user: User;
@@ -24,19 +21,20 @@ interface RequestWithUser extends Request {
 export class EstoqueController {
 	constructor(private readonly estoqueService: EstoqueService) {}
 
+	// --- ROTA DE IMPORTAÇÃO (Prefeitura) ---
 	@Post('prefeitura/importar')
 	@Roles(UserProfile.PREFEITURA)
 	@UseInterceptors(FileInterceptor('file'))
 	async importarEstoque(
 		@UploadedFile() file: Express.Multer.File,
 		@Req() req: RequestWithUser,
-	): Promise<ImportacaoResultado> { // <-- Agora o tipo é reconhecido
+	) {
 		if (!file) {
 			throw new BadRequestException('Nenhum arquivo enviado.');
 		}
 		if (
-			!file.mimetype.includes('spreadsheetml') &&
-			!file.mimetype.includes('excel')
+			!file.mimetype.includes('spreadsheetml') && // .xlsx
+			!file.mimetype.includes('excel') // .xls
 		) {
 			throw new BadRequestException('Formato de arquivo inválido. Envie apenas .xlsx ou .xls');
 		}
@@ -44,6 +42,7 @@ export class EstoqueController {
 		return this.estoqueService.importarEstoque(file.buffer, req.user);
 	}
 
+	// --- ROTAS DA PREFEITURA ---
 	@Get('prefeitura')
 	@Roles(UserProfile.PREFEITURA)
 	getPrefeituraEstoque() {
@@ -59,8 +58,11 @@ export class EstoqueController {
 		return this.estoqueService.ajustarPrefeituraEstoque(ajustarEstoqueDto, req.user);
 	}
 
+	// --- ROTAS DA ESCOLA (GET) ---
+
+	// --- INÍCIO DA CORREÇÃO ---
 	@Get('escola')
-	@Roles(UserProfile.ESCOLA)
+	@Roles(UserProfile.ESCOLA, UserProfile.COZINHEIRA) // <-- ADICIONADO UserProfile.COZINHEIRA
 	getMeuEstoqueEscola(@Req() req: RequestWithUser) {
 		const school = req.user.school;
 		if (!school || !school.id) {
@@ -68,15 +70,17 @@ export class EstoqueController {
 		}
 		return this.estoqueService.getEscolaEstoque(school.id);
 	}
+	// --- FIM DA CORREÇÃO ---
 
 	@Get('escola/:schoolId')
-	@Roles(UserProfile.PREFEITURA)
+	@Roles(UserProfile.PREFEITURA) // Prefeitura pode ver estoque de qualquer escola
 	getEstoqueDeUmaEscola(@Param('schoolId') schoolId: string) {
 		return this.estoqueService.getEscolaEstoque(schoolId);
 	}
 
+	// --- ROTA DA ESCOLA (PATCH) ---
 	@Patch('escola')
-	@Roles(UserProfile.ESCOLA)
+	@Roles(UserProfile.ESCOLA) // <-- CORRETO: Apenas o Gestor (Escola) pode ajustar
 	ajustarMeuEstoqueEscola(
 		@Req() req: RequestWithUser,
 		@Body() ajustarEstoqueDto: AjustarEstoqueDto,

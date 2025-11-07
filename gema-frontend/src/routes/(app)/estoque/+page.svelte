@@ -6,10 +6,7 @@
 	import AjusteEstoqueForm from '$lib/components/AjusteEstoqueForm.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
 	import { toast } from '$lib/toast';
-	
-	// --- NOVO IMPORT ---
 	import ImportarEstoqueForm from '$lib/components/ImportarEstoqueForm.svelte';
-	// --- FIM NOVO IMPORT ---
 
 	type EstoqueItem = {
 		quantity: number;
@@ -30,21 +27,26 @@
 
 	let showModal = false;
 	let currentItem: EstoqueItem | null = null;
-	
-	// --- NOVO ESTADO DO MODAL ---
 	let showImportModal = false;
-	// --- FIM NOVO ESTADO ---
 
 	$: if ($session) {
-		loadStock($session.profile);
+		// --- LÓGICA DE ACESSO ATUALIZADA ---
+		// Cozinheira usa a mesma API da escola
+		if ($session.profile === 'prefeitura') {
+			loadStock('prefeitura');
+		} else if ($session.profile === 'escola' || $session.profile === 'cozinheira') {
+			loadStock('escola');
+		}
+		// --- FIM DA LÓGICA ---
 	}
 
-	async function loadStock(userProfile: string) {
+	async function loadStock(profileOrContext: string) {
 		if (!isLoading) isRefreshing = true;
 		error = null;
 		try {
+			// 'profileOrContext' será 'prefeitura' ou 'escola'
 			estoque = await api.get(
-				userProfile === 'prefeitura' ? 'estoque/prefeitura' : 'estoque/escola'
+				profileOrContext === 'prefeitura' ? 'estoque/prefeitura' : 'estoque/escola'
 			);
 		} catch (e: any) {
 			error = e?.message || '❌ Não foi possível carregar o estoque.';
@@ -64,7 +66,6 @@
 	}
 
 	async function handleSave(event: any) {
-		// DTO do formulário de ajuste (com motivo)
 		const { productId, newQuantity, motivoCategoria, motivoObservacao } = event.detail;
 
 		try {
@@ -96,13 +97,10 @@
 			console.error(e);
 		}
 	}
-	
-	// --- NOVA FUNÇÃO ---
+
 	function onEstoqueImportado() {
-		// Recarrega a lista de estoque após a importação
 		loadStock($session.profile);
 	}
-	// --- FIM NOVA FUNÇÃO ---
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
@@ -116,17 +114,24 @@
 				>
 					Estoque Central da Prefeitura
 				</h1>
-			{:else if $session?.profile === 'escola'}
+			{:else if $session?.profile === 'escola' || $session?.profile === 'cozinheira'}
 				<h1
 					class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"
 				>
 					Estoque da Escola: {$session.school?.name || ''}
 				</h1>
 			{/if}
-			<p class="text-gray-600 mt-1 text-sm">
-				Acompanhe os níveis e ajuste as quantidades de produtos.
-			</p>
-		</div>
+			
+			{#if $session?.profile === 'cozinheira'}
+				<p class="text-gray-600 mt-1 text-sm">
+					Acompanhe os níveis de estoque da sua escola.
+				</p>
+			{:else}
+				<p class="text-gray-600 mt-1 text-sm">
+					Acompanhe os níveis e ajuste as quantidades de produtos.
+				</p>
+			{/if}
+			</div>
 
 		{#if $session?.profile === 'prefeitura'}
 			<button
@@ -136,7 +141,7 @@
 				Importar Planilha
 			</button>
 		{/if}
-		</div>
+	</div>
 
 	{#if isLoading}
 		<div class="flex justify-center items-center p-10">
@@ -151,7 +156,9 @@
 			class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"
 		>
 			<p class="text-gray-600 font-semibold text-lg">Nenhum produto.</p>
-			<p class="text-sm text-gray-400 mt-2">Cadastre produtos e ajuste o estoque.</p>
+			{#if $session?.profile !== 'cozinheira'}
+				<p class="text-sm text-gray-400 mt-2">Cadastre produtos e ajuste o estoque.</p>
+			{/if}
 		</div>
 	{:else}
 		<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -187,19 +194,22 @@
 							<span class="text-gray-500"> Mín: {item.minStock} </span>
 						</div>
 					</div>
-					<button
-						on:click={() => openAjusteModal(item)}
-						class="mt-5 w-full py-2.5 rounded-lg font-semibold text-sm text-primary-700 bg-primary-50 hover:bg-primary-100 hover:shadow-sm transition-all duration-200"
-					>
-						Ajustar Estoque
-					</button>
-				</div>
+
+					{#if $session?.profile === 'prefeitura' || $session?.profile === 'escola'}
+						<button
+							on:click={() => openAjusteModal(item)}
+							class="mt-5 w-full py-2.5 rounded-lg font-semibold text-sm text-primary-700 bg-primary-50 hover:bg-primary-100 hover:shadow-sm transition-all duration-200"
+						>
+							Ajustar Estoque
+						</button>
+					{/if}
+					</div>
 			{/each}
 		</div>
 	{/if}
 </div>
 
-{#if currentItem}
+{#if currentItem && ($session?.profile === 'prefeitura' || $session?.profile === 'escola')}
 	<Modal show={showModal} on:close={() => (showModal = false)} size="max-w-md">
 		<AjusteEstoqueForm
 			item={{ product: currentItem.product, quantity: currentItem.quantity }}
@@ -209,7 +219,7 @@
 	</Modal>
 {/if}
 
-{#if showImportModal}
+{#if showImportModal && $session?.profile === 'prefeitura'}
 	<Modal show={showImportModal} on:close={() => (showImportModal = false)} size="max-w-2xl">
 		<ImportarEstoqueForm
 			on:cancel={() => (showImportModal = false)}
@@ -217,6 +227,7 @@
 		/>
 	</Modal>
 {/if}
+
 <style>
 	@keyframes fadeIn {
 		from {
@@ -242,8 +253,6 @@
 	.animate-fadeUp {
 		animation: fadeUp 0.3s ease-out forwards;
 	}
-
-	/* Adicionado para a animação do campo de motivo */
 	:global([transition\:fade]) {
 		opacity: 0;
 		animation: fadeIn 0.3s ease-out forwards;

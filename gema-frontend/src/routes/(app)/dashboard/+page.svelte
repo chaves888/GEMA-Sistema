@@ -426,32 +426,6 @@
 						</div>
 					</a>
 				</div>
-				{#if dashboardData.draftCardapios?.length > 0}
-					<div class="panel">
-						<div class="panel-header">
-							<FileText class="w-5 h-5 text-yellow-600" />
-							<h3>Detalhes dos Rascunhos</h3>
-						</div>
-						<ul class="space-y-3">
-							{#each dashboardData.draftCardapios as c}
-								<li class="flex justify-between text-sm border-b pb-2 last:border-b-0">
-									<div>
-										<a
-											href="/cardapios/{c.id}"
-											class="font-medium text-primary-700 hover:underline">{c.name}</a
-										>
-										<p class="text-xs text-gray-500">
-											{formatLocalDate(c.startDate)} a {formatLocalDate(c.endDate)}
-										</p>
-									</div>
-									<a href="/cardapios/{c.id}" class="link">Gerenciar</a>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{:else}
-					<p class="text-sm text-gray-500 italic">Nenhum cardápio em rascunho.</p>
-				{/if}
 			{/if}
 
 			{#if $session.profile === 'cozinheira'}
@@ -464,7 +438,7 @@
 					{#if diaSemanaHoje && (refeicaoManhaHoje || refeicaoTardeHoje)}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div class="meal-card">
-								<h4 class="meal-header">☀️ Manhã</h4>
+								<h4 class="meal-header morning">☀️ Manhã</h4>
 								{#if refeicaoManhaHoje}
 									<p class="meal-description">“{refeicaoManhaHoje.description}”</p>
 									<hr class="my-3 border-gray-200" />
@@ -492,7 +466,7 @@
 							</div>
 
 							<div class="meal-card">
-								<h4 class="meal-header">🌇 Tarde</h4>
+								<h4 class="meal-header afternoon">🌇 Tarde</h4>
 								{#if refeicaoTardeHoje}
 									<p class="meal-description">“{refeicaoTardeHoje.description}”</p>
 									<hr class="my-3 border-gray-200" />
@@ -748,11 +722,28 @@
 		box-shadow: 0 2px 4px rgba(0,0,0,0.04); /* shadow-sm */
 	}
 	.meal-header {
-		font-size: 1.25rem; /* text-xl */
-		font-weight: 700; /* font-bold */
-		color: #4f46e5; /* primary-600 */
-		margin-bottom: 0.75rem; /* mb-3 */
-	}
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin-bottom: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.meal-header.morning {
+	color: #92400e; /* amber-800 */
+	background: linear-gradient(to right, #fef3c7, #fde68a); /* amber-50→amber-200 */
+	border-left: 4px solid #f59e0b; /* amber-500 */
+}
+
+/* 🌇 Tarde */
+.meal-header.afternoon {
+	color: #7c2d12; /* orange-900 */
+	background: linear-gradient(to right, #ffedd5, #fed7aa); /* orange-50→orange-200 */
+	border-left: 4px solid #fb923c; /* orange-400 */
+}
 	.meal-description {
 		font-size: 1.125rem; /* text-lg */
 		font-style: italic;
