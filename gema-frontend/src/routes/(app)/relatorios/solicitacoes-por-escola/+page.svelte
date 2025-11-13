@@ -10,10 +10,12 @@
 
   // @ts-ignore (Ignora aviso de tipo do flatpickr)
   import flatpickr from 'flatpickr';
-  // ... (outros imports)
+  import 'flatpickr/dist/flatpickr.css';
+  import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
+
+  // Libs de PDF
   import jsPDF from 'jspdf';
   import autoTable from 'jspdf-autotable';
-    import { Portuguese } from 'flatpickr/dist/l10n/pt';
 
   // ... (type RelatorioRow)
   type RelatorioRow = {
@@ -136,13 +138,13 @@
     try {
       const data = [
         ...getReportHeaders(), // Cabeçalhos
-        ...getReportBody()    // Corpo
+        ...getReportBody(), // Corpo
       ];
-      
+
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitações');
-      
+
       // Auto-ajusta a largura das colunas (opcional, mas recomendado)
       worksheet['!cols'] = [
         { wch: 40 }, // Escola
@@ -150,7 +152,7 @@
         { wch: 15 }, // Itens Pedidos
         { wch: 15 }, // Itens Aprovados
         { wch: 10 }, // % Atend.
-        { wch: 15 }  // Divergências
+        { wch: 15 }, // Divergências
       ];
 
       XLSX.writeFile(workbook, `relatorio_solicitacoes_${startDate}_a_${endDate}.xlsx`);
@@ -252,7 +254,6 @@
       {/if}
     </button>
   </div>
-
 
   {#if reportData}
     <div

@@ -15,11 +15,18 @@
   // --- 1. IMPORTAR ÍCONES DE FILTRO ---
   import { Search, Calendar } from 'lucide-svelte';
 
+  // --- 1. IMPORTAR FLATPICKR ---
+  // @ts-ignore
+  import flatpickr from 'flatpickr';
+  import 'flatpickr/dist/flatpickr.css';
+  import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
+  // --- FIM DA IMPORTAÇÃO ---
+
   let solicitacoes: Solicitacao[] = [];
   let isLoading = true;
   let isActionLoading = false;
   let error: string | null = null;
-  let dataLoaded = false; // <-- 2. ADICIONAR FLAG DE CONTROLE (CORREÇÃO DO BUG)
+  let dataLoaded = false; // <-- CORREÇÃO DO LOOP
 
   // --- ESTADO DOS FILTROS ---
   let filterStatus = '';
@@ -50,20 +57,45 @@
   let showCancelModal = false;
   let solicitacaoToCancel: Solicitacao | null = null;
   let motivoCancelamento = '';
+  
+  // --- ADICIONAR LÓGICA DO FLATPICKR ---
+  let flatpickrStartInstance: any = null;
+  let flatpickrEndInstance: any = null;
 
-  // --- 3. CORRIGIR O LOOP INFINITO ---
+  const flatpickrOptions = {
+    dateFormat: 'Y-m-d', // O backend espera YYYY-MM-DD
+    locale: Portuguese,
+  };
+
+  function initStartDate(node: HTMLInputElement) {
+    flatpickrStartInstance = flatpickr(node, {
+      ...flatpickrOptions,
+      onChange: (selectedDates) => {
+        if (selectedDates[0] && flatpickrEndInstance) {
+          flatpickrEndInstance.set('minDate', selectedDates[0]);
+        }
+      },
+    });
+  }
+  function initEndDate(node: HTMLInputElement) {
+    flatpickrEndInstance = flatpickr(node, flatpickrOptions);
+  }
+  // --- FIM DA LÓGICA ---
+
+  // --- CORRIGIR O LOOP INFINITO ---
   $: if ($session && !dataLoaded) {
     dataLoaded = true; // Marca que os dados já foram pedidos
     loadSolicitacoes();
   }
   // --- FIM DA CORREÇÃO ---
 
-  // --- LISTA FILTRADA ---
+  // --- LISTA FILTRADA (CORRIGIDO s.school.name) ---
   $: filteredSolicitacoes = solicitacoes.filter((s) => {
     const statusMatch = !filterStatus || s.status === filterStatus;
 
     let searchMatch = true;
     if ($session?.profile === 'prefeitura' && filterSearchTerm) {
+      // Correção: Adiciona (s.school?.name || '') para evitar erro se a escola for nula
       searchMatch = (s.school?.name || '').toLowerCase().includes(filterSearchTerm.toLowerCase());
     }
 
@@ -337,9 +369,11 @@
       </label>
       <div class="relative mt-1">
         <input
-          type="date"
+          type="text"
           id="filterDateStart"
+          placeholder="YYYY-MM-DD"
           bind:value={filterDateStart}
+          use:initStartDate
           class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10"
         />
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -354,9 +388,11 @@
       </label>
       <div class="relative mt-1">
         <input
-          type="date"
+          type="text"
           id="filterDateEnd"
+          placeholder="YYYY-MM-DD"
           bind:value={filterDateEnd}
+          use:initEndDate
           class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10"
         />
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -365,7 +401,6 @@
       </div>
     </div>
   </div>
-
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
       <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando solicitações...</p>
@@ -390,7 +425,7 @@
       <p class="text-gray-600 font-semibold text-lg">
         Nenhum resultado encontrado para os filtros aplicados.
       </p>
-      <p class="text-gray-500 mt-1">Tente ajustar sua busca ou limpar os filtros.</p>
+      <p class="text-sm text-gray-400 mt-1">Tente ajustar sua busca ou limpar os filtros.</p>
     </div>
   {:else}
     <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md overflow-x-auto">
@@ -415,7 +450,8 @@
               class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
               >Status</th
             >
-            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            <th
+              class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
               >Ações</th
             >
           </tr>
@@ -620,14 +656,15 @@
   .animate-fadeIn {
     animation: fadeIn 0.25s ease-out;
   }
-  /* Adicionado para garantir que o cabeçalho da tabela tenha cantos arredondados */
   th:first-child {
     border-top-left-radius: 1rem;
   }
   th:last-child {
     border-top-right-radius: 1rem;
   }
-  /* Adicionado para esconder o ícone nativo do input[type=date] */
+
+  /* --- 6. ESTILO PARA ESCONDER O ÍCONE NATIVO --- */
+  /* Remove o ícone nativo do "date" pois estamos usando o flatpickr */
   input[type='date']::-webkit-calendar-picker-indicator {
     display: none;
     -webkit-appearance: none;
