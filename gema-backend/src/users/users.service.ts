@@ -11,7 +11,7 @@ import { Escola } from 'src/escolas/entities/escola.entity';
 import { Repository, Not } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { User, UserProfile } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -202,4 +202,13 @@ export class UsersService {
 			},
 		});
 	}
+
+	async findAllByProfile(profile: UserProfile): Promise<User[]> {
+    return this.usersRepository.find({
+      where: {
+        profile: profile,
+        isActive: true, // Retorna apenas gestores ativos
+      },
+    });
+  }
 }

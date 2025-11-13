@@ -17,6 +17,7 @@
 		LogOut,
 		ClipboardList,
 		BookOpen,
+		FileText,
 	} from 'lucide-svelte';
 
 	onMount(() => {
@@ -40,6 +41,7 @@
 	$: activeProdutos = pathname.startsWith('/produtos');
 	$: activeEstoque = pathname.startsWith('/estoque');
 	$: activeSolicitacoes = pathname.startsWith('/solicitacoes');
+	$: activeRelatorios = pathname.startsWith('/relatorios');
 
 	const sidebarBg = 'bg-primary-800';
 	const primaryText = 'text-primary-300';
@@ -157,6 +159,17 @@
 						{/if}
 					</a>
 				{/if}
+				{#if $session.profile === 'prefeitura'}
+         			<a
+            			href="/relatorios"
+            			class="flex items-center gap-3 p-2 transition-colors {activeRelatorios
+              				? activeStyle
+              				: inactiveStyle}"
+          			>
+            			<FileText class="w-5 h-5 flex-shrink-0" />
+            			<span>Relatórios</span>
+          			</a>
+        {/if}
 			</nav>
 
 			<div class="p-4 border-t border-primary-700 mt-auto flex-shrink-0">

@@ -11,8 +11,8 @@ export class CreateUserDto {
     email: string;
 
     @IsString()
-    @MinLength(6)
-    password: string;
+    @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres.' })
+    password: string;
 
     @IsEnum(UserProfile)
     profile: UserProfile;
