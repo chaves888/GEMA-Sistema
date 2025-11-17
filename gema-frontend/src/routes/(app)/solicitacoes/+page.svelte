@@ -662,11 +662,4 @@
   th:last-child {
     border-top-right-radius: 1rem;
   }
-
-  /* --- 6. ESTILO PARA ESCONDER O ÍCONE NATIVO --- */
-  /* Remove o ícone nativo do "date" pois estamos usando o flatpickr */
-  input[type='date']::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
-  }
 </style>
