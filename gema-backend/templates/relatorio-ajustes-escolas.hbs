@@ -48,18 +48,18 @@
         </thead>
         <tbody>
           {{#each reportData}}
-          <tr>
-            <td>{{this.escolaName}}</td>
-            <td>{{this.productName}} ({{this.unit}})</td>
-            <td 
-              class="{{#if (|| (eq this.motivoCategoria 'perda') (eq this.motivoCategoria 'vencimento'))}}motivo-perda{{/if}} {{#if (|| (eq this.motivoCategoria 'uso_interno') (eq this.motivoCategoria 'outro'))}}motivo-outro{{/if}}"
-            >
-              {{lookup (obj (kv 'perda' 'Perda / Avaria') (kv 'vencimento' 'Vencimento') (kv 'uso_interno' 'Uso Interno') (kv 'ajuste' 'Ajuste') (kv 'outro' 'Outro')) this.motivoCategoria}}
+          <tr>
+            <td>{{this.escolaName}}</td>
+            <td>{{this.productName}} ({{this.unit}})</td>
+            
+            <td class="{{this.cssClass}}">
+              {{this.motivoLabel}}
             </td>
-            <td class="text-right"><strong>{{this.quantidadeTotal}}</strong></td>
-            <td>{{this.motivoObservacao}}</td>
-          </tr>
-          {{/each}}
+
+            <td class="text-right"><strong>{{this.quantidadeTotal}}</strong></td>
+            <td>{{this.motivoObservacao}}</td>
+          </tr>
+          {{/each}}
         </tbody>
         <tfoot>
           <tr>

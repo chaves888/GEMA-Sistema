@@ -179,130 +179,80 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
-	<div
-		class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border"
-	>
-		<div>
-			<h1
-				class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent"
-			>
-				Cardápios Semanais
-			</h1>
-			{#if $session?.profile === 'nutricionista'}
-				<p class="text-gray-600 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p>
-			{:else}
-				<p class="text-gray-600 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p>
-			{/if}
-		</div>
-		{#if $session?.profile === 'nutricionista'}
-			<button
-				on:click={handleNovoCardapio}
-				disabled={isActionLoading}
-				class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50"
-			>
-				<CalendarPlus class="w-5 h-5" /> Novo Cardápio
-			</button>
-		{/if}
-	</div>
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+        <div>
+            <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+                Cardápios Semanais
+            </h1>
+            {#if $session?.profile === 'nutricionista'}
+                <p class="text-gray-600 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p>
+            {:else}
+                <p class="text-gray-600 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p>
+            {/if}
+        </div>
+        {#if $session?.profile === 'nutricionista'}
+            <button on:click={handleNovoCardapio} disabled={isActionLoading} class="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50">
+                <CalendarPlus class="w-5 h-5" /> Novo Cardápio
+            </button>
+        {/if}
+    </div>
 
-	{#if isLoading}
-		<div class="flex justify-center items-center p-10">
-			<p class="text-gray-500 text-lg animate-pulse">⏳ Carregando...</p>
-		</div>
-	{:else if error && cardapios.length === 0}
-		<div class="bg-red-100 text-red-700 p-4 rounded-lg shadow-sm text-center font-medium">
-			{error}
-		</div>
-	{:else if cardapios.length === 0}
-		<div
-			class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"
-		>
-			<p class="text-gray-600 font-semibold text-lg">Nenhum cardápio.</p>
-			{#if $session?.profile === 'nutricionista'}
-				<p class="text-sm text-gray-400 mt-2">Clique em “Novo Cardápio” para começar.</p>
-			{:else}
-				<p class="text-sm text-gray-400 mt-2">Aguardando envio.</p>
-			{/if}
-		</div>
-	{:else}
-		<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-			{#each cardapios as cardapio (cardapio.id)}
-				{@const weekdays = getWeekdays(cardapio.startDate, cardapio.endDate)}
-				<div
-					class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
-				>
-					<div class="p-5 border-b border-gray-100">
-						<span
-							class="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold shadow-sm {cardapio.status ===
-							'publicado'
-								? 'bg-green-100 text-green-800'
-								: 'bg-yellow-100 text-yellow-800'}"
-						>
-							{cardapio.status === 'publicado' ? 'Publicado' : 'Rascunho'}
-						</span>
-						
-						<h3 class="text-2xl font-bold text-gray-800 truncate" title={cardapio.name}>
-							{cardapio.name}
-						</h3>
-						
-						<p class="text-sm text-gray-500 mt-1">
-							Criado por {cardapio.createdBy?.name || '(Usuário Excluído)'}
-						</p>
-					</div>
+    {#if isLoading}
+        <div class="flex justify-center items-center p-10"><p class="text-gray-500 text-lg animate-pulse">⏳ Carregando...</p></div>
+    {:else if cardapios.length === 0}
+        <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
+            <p class="text-gray-600 font-semibold text-lg">Nenhum cardápio.</p>
+            {#if $session?.profile === 'nutricionista'}
+                <p class="text-sm text-gray-400 mt-2">Clique em “Novo Cardápio” para começar.</p>
+            {/if}
+        </div>
+    {:else}
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {#each cardapios as cardapio (cardapio.id)}
+                {@const weekdays = getWeekdays(cardapio.startDate, cardapio.endDate)}
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                    <div class="p-5 border-b border-gray-100">
+                        <span class="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold shadow-sm {cardapio.status === 'publicado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            {cardapio.status === 'publicado' ? 'Publicado' : 'Rascunho'}
+                        </span>
+                        <h3 class="text-2xl font-bold text-gray-800 truncate" title={cardapio.name}>{cardapio.name}</h3>
+                        <p class="text-sm text-gray-500 mt-1">Criado por {cardapio.createdBy?.name || '(Usuário Excluído)'}</p>
+                    </div>
 
-					<div class="p-5 flex-1">
-						<span class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-							<CalendarDays class="w-4 h-4" />
-							Dias Inclusos
-						</span>
-						<div class="flex flex-wrap gap-2 mt-3">
-							{#if weekdays.length > 0}
-								{#each weekdays as dia}
-									<span class="px-3 py-1 bg-primary-50 text-primary-700 text-sm font-semibold rounded-full">
-										{dia}
-									</span>
-								{/each}
-							{:else}
-								<span class="text-sm text-gray-400 italic">(Nenhum dia útil no período)</span>
-							{/if}
-						</div>
-					</div>
+                    <div class="p-5 flex-1">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <CalendarDays class="w-4 h-4" /> Dias Inclusos
+                        </span>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            {#if weekdays.length > 0}
+                                {#each weekdays as dia}
+                                    <span class="px-3 py-1 bg-primary-50 text-primary-700 text-sm font-semibold rounded-full">{dia}</span>
+                                {/each}
+                            {:else}
+                                <span class="text-sm text-gray-400 italic">(Nenhum dia útil no período)</span>
+                            {/if}
+                        </div>
+                    </div>
 
-					<div
-						class="bg-gray-50 p-4 rounded-b-2xl border-t mt-auto flex justify-end items-center gap-3"
-					>
-						{#if $session?.profile === 'nutricionista'}
-							<button
-								on:click={() => handleViewEdit(cardapio.id)}
-								disabled={isActionLoading}
-								class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200"
-							>
-								<Edit class="w-4 h-4" />
-								{cardapio.status === 'rascunho' ? 'Gerenciar' : 'Visualizar'}
-							</button>
-
-							<button
-								on:click={() => openConfirmDeleteModal(cardapio)}
-								disabled={isActionLoading}
-								class="action-btn text-red-600 bg-red-100 hover:bg-red-200"
-							>
-								<Trash2 class="w-4 h-4" />
-							</button>
-						{:else}
-							<button
-								on:click={() => handleViewEdit(cardapio.id)}
-								disabled={isActionLoading}
-								class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200"
-							>
-								<Eye class="w-4 h-4" /> Visualizar
-							</button>
-						{/if}
-					</div>
-				</div>
-			{/each}
-		</div>
-	{/if}
+                    <div class="bg-gray-50 p-4 rounded-b-2xl border-t mt-auto flex justify-end items-center gap-3">
+                        {#if $session?.profile === 'nutricionista'}
+                            <button on:click={() => handleViewEdit(cardapio.id)} disabled={isActionLoading} class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200">
+                                <Edit class="w-4 h-4" /> {cardapio.status === 'rascunho' ? 'Gerenciar' : 'Visualizar'}
+                            </button>
+                            <button on:click={() => openConfirmDeleteModal(cardapio)} disabled={isActionLoading} class="action-btn text-red-600 bg-red-100 hover:bg-red-200">
+                                <Trash2 class="w-4 h-4" />
+                            </button>
+                        {:else}
+                            <button on:click={() => handleViewEdit(cardapio.id)} disabled={isActionLoading} class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200">
+                                <Eye class="w-4 h-4" /> Visualizar
+                            </button>
+                        {/if}
+                    </div>
+                </div>
+            {/each}
+        </div>
+    {/if}
 </div>
 
 {#if showCreateModal}

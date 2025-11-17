@@ -6,7 +6,7 @@
   const barWidth = Math.min(percentage, 100);
 </script>
 
-<div class="w-full bg-gray-200 rounded-full h-2.5">
+<div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
   <div
     class="h-2.5 rounded-full transition-all duration-500"
     class:bg-red-500={status === 'Crítico'}

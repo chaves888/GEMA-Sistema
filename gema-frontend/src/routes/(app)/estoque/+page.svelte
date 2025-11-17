@@ -119,74 +119,40 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
-  <div
-    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border"
-  >
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
     <div>
       {#if $session?.profile === 'prefeitura'}
-        <h1
-          class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"
-        >
-          Estoque Central da Prefeitura
-        </h1>
+        <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2">Estoque Central da Prefeitura</h1>
       {:else if $session?.profile === 'escola' || $session?.profile === 'cozinheira'}
-        <h1
-          class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2"
-        >
-          Estoque da Escola: {$session.school?.name || ''}
-        </h1>
+        <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2">Estoque da Escola: {$session.school?.name || ''}</h1>
       {/if}
-
       {#if $session?.profile === 'cozinheira'}
-        <p class="text-gray-600 mt-1 text-sm">
-          Acompanhe os níveis de estoque da sua escola.
-        </p>
+        <p class="text-gray-600 mt-1 text-sm">Acompanhe os níveis de estoque da sua escola.</p>
       {:else}
-        <p class="text-gray-600 mt-1 text-sm">
-          Acompanhe os níveis e ajuste as quantidades de produtos.
-        </p>
+        <p class="text-gray-600 mt-1 text-sm">Acompanhe os níveis e ajuste as quantidades de produtos.</p>
       {/if}
     </div>
-
     {#if $session?.profile === 'prefeitura'}
-      <button
-        on:click={() => (showImportModal = true)}
-        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95"
-      >
+      <button on:click={() => (showImportModal = true)} class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95">
         Importar Planilha
       </button>
     {/if}
   </div>
 
-  <div
-    class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-end"
-  >
-    <div class="flex-1 min-w-[250px]">
+  <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+    <div class="flex-1 w-full md:min-w-[250px]">
       <label for="searchTerm" class="block text-sm font-medium text-gray-700">Buscar por Nome</label>
       <div class="relative mt-1">
-        <input
-          type="text"
-          id="searchTerm"
-          bind:value={searchTerm}
-          placeholder="Digite o nome do produto..."
-          class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pl-10"
-        />
+        <input type="text" id="searchTerm" bind:value={searchTerm} placeholder="Digite o nome do produto..." class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pl-10" />
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search class="w-5 h-5 text-gray-400" />
         </div>
       </div>
     </div>
-
-    <div class="flex-1 min-w-[150px]">
-      <label for="filterStatus" class="block text-sm font-medium text-gray-700"
-        >Filtrar por Status</label
-      >
-      <select
-        id="filterStatus"
-        bind:value={filterStatus}
-        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-      >
+    <div class="flex-1 w-full md:min-w-[150px]">
+      <label for="filterStatus" class="block text-sm font-medium text-gray-700">Filtrar por Status</label>
+      <select id="filterStatus" bind:value={filterStatus} class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
         <option value="">Todos os Status</option>
         <option value="Crítico">Crítico</option>
         <option value="Médio">Médio</option>
@@ -207,57 +173,33 @@
   {:else if estoque.length === 0}
     <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
       <p class="text-gray-600 font-semibold text-lg">Nenhum produto.</p>
-      {#if $session?.profile !== 'cozinheira'}
-        <p class="text-sm text-gray-400 mt-2">Cadastre produtos e ajuste o estoque.</p>
-      {/if}
     </div>
   {:else if filteredEstoque.length === 0}
     <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
       <p class="text-gray-600 font-semibold text-lg">Nenhum produto encontrado.</p>
-      <p class="text-sm text-gray-400 mt-2">Tente ajustar os filtros de busca ou status.</p>
     </div>
   {:else}
-    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {#each filteredEstoque as item (item.product.id)}
-        <div
-          class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-200 animate-fadeUp"
-        >
+        <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col justify-between hover:shadow-lg transition-all duration-200 animate-fadeUp">
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="font-semibold text-gray-900 text-lg">{item.product.name}</h3>
               <p class="text-sm text-gray-500">Unidade: {item.product.unit}</p>
             </div>
-            <span
-              class="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap {item.status ===
-              'Crítico'
-                ? 'bg-red-100 text-red-700'
-                : item.status === 'Médio'
-                  ? 'bg-yellow-100 text-yellow-700'
-                  : item.status === 'Bom'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-600'}"
-            >
+            <span class="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap {item.status === 'Crítico' ? 'bg-red-100 text-red-700' : item.status === 'Médio' ? 'bg-yellow-100 text-yellow-700' : item.status === 'Bom' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
               {item.status}
             </span>
           </div>
           <div>
             <StatusBar percentage={item.percentage} status={item.status} />
             <div class="flex justify-between text-sm mt-2">
-              <span class="text-gray-600">
-                <span class="font-semibold text-gray-900 text-lg">{item.quantity}</span>
-                {item.product.unit}
-              </span>
+              <span class="text-gray-600"><span class="font-semibold text-gray-900 text-lg">{item.quantity}</span> {item.product.unit}</span>
               <span class="text-gray-500"> Mín: {item.minStock} </span>
             </div>
           </div>
-
           {#if $session?.profile === 'prefeitura' || $session?.profile === 'escola'}
-            <button
-              on:click={() => openAjusteModal(item)}
-              class="mt-5 w-full py-2.5 rounded-lg font-semibold text-sm text-primary-700 bg-primary-50 hover:bg-primary-100 hover:shadow-sm transition-all duration-200"
-            >
-              Ajustar Estoque
-            </button>
+            <button on:click={() => openAjusteModal(item)} class="mt-5 w-full py-2.5 rounded-lg font-semibold text-sm text-primary-700 bg-primary-50 hover:bg-primary-100 hover:shadow-sm transition-all duration-200">Ajustar Estoque</button>
           {/if}
         </div>
       {/each}
@@ -267,20 +209,12 @@
 
 {#if currentItem && ($session?.profile === 'prefeitura' || $session?.profile === 'escola')}
   <Modal show={showModal} on:close={() => (showModal = false)} size="max-w-md">
-    <AjusteEstoqueForm
-      item={{ product: currentItem.product, quantity: currentItem.quantity }}
-      on:save={handleSave}
-      on:cancel={() => (showModal = false)}
-    />
+    <AjusteEstoqueForm item={{ product: currentItem.product, quantity: currentItem.quantity }} on:save={handleSave} on:cancel={() => (showModal = false)} />
   </Modal>
 {/if}
-
 {#if showImportModal && $session?.profile === 'prefeitura'}
   <Modal show={showImportModal} on:close={() => (showImportModal = false)} size="max-w-2xl">
-    <ImportarEstoqueForm
-      on:cancel={() => (showImportModal = false)}
-      on:imported={onEstoqueImportado}
-    />
+    <ImportarEstoqueForm on:cancel={() => (showImportModal = false)} on:imported={onEstoqueImportado} />
   </Modal>
 {/if}
 

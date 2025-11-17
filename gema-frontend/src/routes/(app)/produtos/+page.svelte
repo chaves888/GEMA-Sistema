@@ -5,29 +5,25 @@
   import ProductForm from '$lib/components/ProductForm.svelte';
   import { session } from '$lib/sessionStore';
   import { toast } from '$lib/toast';
-
-  // 1. IMPORTAMOS O NOVO DIÁLOGO DE CONFIRMAÇÃO E O ÍCONE DE BUSCA
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import { Search } from 'lucide-svelte';
 
-  // --- TIPO Product ATUALIZADO ---
+  // --- TIPO Product ---
   type Product = {
     id: string;
     name: string;
     unit: string;
-    minStockPrefeitura: number; // Campo atualizado
-    minStockEscola: number; // Campo atualizado
+    minStockPrefeitura: number;
+    minStockEscola: number;
   };
-  // --- FIM ATUALIZAÇÃO ---
 
   let products: Product[] = [];
   let isLoading = true;
   let error: string | null = null;
 
-  // --- 2. ADICIONAR ESTADO PARA O FILTRO ---
+  // --- FILTROS ---
   let searchTerm = '';
 
-  // --- 3. ADICIONAR LISTA FILTRADA REATIVA ---
   $: filteredProducts = products.filter((product) => {
     return (
       searchTerm.trim() === '' ||
@@ -35,7 +31,7 @@
     );
   });
 
-  // Estado do Modal de Edição/Criação
+  // --- ESTADOS ---
   let showModal = false;
   let isEditing = false;
   let currentProduct: {
@@ -46,18 +42,15 @@
     minStockEscola: number;
   } = { name: '', unit: 'UN', minStockPrefeitura: 0, minStockEscola: 0 };
 
-  // 2. ADICIONAMOS ESTADO PARA O MODAL DE CONFIRMAÇÃO
   let showConfirmModal = false;
   let productToDelete: Product | null = null;
   let confirmMessage = '';
 
   onMount(async () => {
     try {
-      // A API já deve retornar os novos campos minStock
       products = await api.get('products');
     } catch (e: any) {
-      // Adicionado tipo 'any'
-      error = e?.message || 'Não foi possível carregar os produtos.'; // Mensagem de erro atualizada
+      error = e?.message || 'Não foi possível carregar os produtos.';
       console.error(e);
     } finally {
       isLoading = false;
@@ -66,74 +59,54 @@
 
   function openAddModal() {
     isEditing = false;
-    // --- ATUALIZADO: Define valores padrão para os novos campos ---
     currentProduct = { name: '', unit: 'UN', minStockPrefeitura: 0, minStockEscola: 0 };
-    // --- FIM ATUALIZAÇÃO ---
     showModal = true;
   }
 
   function openEditModal(product: Product) {
     isEditing = true;
-    // --- ATUALIZADO: Passa os novos campos para edição ---
-    currentProduct = { ...product }; // Copia todos os campos, incluindo os novos minStock
-    // --- FIM ATUALIZAÇÃO ---
+    currentProduct = { ...product };
     showModal = true;
   }
 
   async function handleSave(event: any) {
     const productToSave = event.detail;
-
-    // Validação de espaços
     const trimmedName = productToSave.name ? productToSave.name.trim() : '';
+    
     if (trimmedName === '') {
-      toast.error('O nome do produto não pode estar vazio ou conter apenas espaços.');
+      toast.error('O nome do produto não pode estar vazio.');
       return;
     }
     productToSave.name = trimmedName;
 
     try {
       if (isEditing) {
-        const updatedProduct = await api.patch(
-          `products/${productToSave.id}`,
-          productToSave
-        );
-        products = products.map((p) =>
-          p.id === updatedProduct.id ? updatedProduct : p
-        );
-
+        const updatedProduct = await api.patch(`products/${productToSave.id}`, productToSave);
+        products = products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p));
         toast.success('Produto atualizado com sucesso!');
       } else {
         const newProduct = await api.post('products', productToSave);
         products = [...products, newProduct];
         products.sort((a, b) => a.name.localeCompare(b.name));
-
         toast.success('Produto criado com sucesso!');
       }
       showModal = false;
     } catch (e: any) {
-      if (e && e.message) {
-        toast.error(`Erro: ${e.message}`);
-      } else {
-        toast.error('Erro ao salvar o produto.');
-      }
+      const msg = e?.message || 'Erro ao salvar o produto.';
+      toast.error(msg);
       console.error(e);
     }
   }
 
-  // 3. ESTA FUNÇÃO AGORA APENAS ABRE O MODAL
   function openConfirmDeleteModal(product: Product) {
     productToDelete = product;
-    confirmMessage = `Tem certeza que deseja excluir o produto "${product.name}"? Esta ação não pode ser desfeita.`;
+    confirmMessage = `Tem certeza que deseja excluir o produto "${product.name}"?`;
     showConfirmModal = true;
   }
 
-  // 4. ESTA FUNÇÃO EXECUTA A EXCLUSÃO (é chamada pelo modal)
   async function handleConfirmDelete() {
     if (!productToDelete) return;
-
     const idToDelete = productToDelete.id;
-
-    // Fecha o modal e limpa o estado
     showConfirmModal = false;
     productToDelete = null;
 
@@ -142,27 +115,21 @@
       products = products.filter((p) => p.id !== idToDelete);
       toast.success('Produto excluído com sucesso!');
     } catch (e: any) {
-      const errorMessage = e?.message || 'Falha ao excluir o produto.';
-      toast.error(errorMessage);
-      console.error(e);
+      toast.error(e?.message || 'Falha ao excluir o produto.');
     }
   }
 
-  // 5. FUNÇÃO PARA CANCELAR A EXCLUSÃO
   function onCancelDelete() {
     showConfirmModal = false;
     productToDelete = null;
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
-  <div
-    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border"
-  >
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+  
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100">
     <div>
-      <h1
-        class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent"
-      >
+      <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
         Gerenciamento de Produtos
       </h1>
       <p class="text-gray-600 mt-1 text-sm">Adicione, edite e remova produtos do sistema.</p>
@@ -177,10 +144,8 @@
     {/if}
   </div>
 
-  <div
-    class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4"
-  >
-    <div class="flex-1 min-w-[250px]">
+  <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4">
+    <div class="flex-1 w-full md:min-w-[250px]">
       <label for="searchTerm" class="block text-sm font-medium text-gray-700">Buscar por Nome</label>
       <div class="relative mt-1">
         <input
@@ -206,85 +171,66 @@
       {error}
     </div>
   {:else if products.length === 0}
-    <div
-      class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"
-    >
+    <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
       <p class="text-gray-600 font-semibold text-lg">Nenhum produto.</p>
       <p class="text-sm text-gray-400 mt-2">Clique em “Novo Produto” para adicionar.</p>
     </div>
   {:else if filteredProducts.length === 0}
-    <div
-      class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"
-    >
+    <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
       <p class="text-gray-600 font-semibold text-lg">Nenhum produto encontrado.</p>
       <p class="text-sm text-gray-400 mt-2">Tente ajustar o filtro de busca.</p>
     </div>
   {:else}
-    <div
-      class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-x-auto"
-    >
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-          <tr>
-            <th
-              class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >Nome</th
-            >
-            <th
-              class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >Unidade</th
-            >
-            <th
-              class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >Mín. Prefeitura</th
-            >
-            <th
-              class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >Mín. Escola</th
-            >
-            {#if $session?.profile === 'prefeitura'}
-              <th
-                class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >Ações</th
-              >
-            {/if}
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-100">
-          {#each filteredProducts as product (product.id)}
-            <tr class="hover:bg-primary-50/40 transition-all duration-150">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800"
-                >{product.name}</td
-              >
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
-                >{product.unit}</td
-              >
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
-                >{product.minStockPrefeitura}</td
-              >
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
-                >{product.minStockEscola}</td
-              >
+    <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Unidade</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mín. Prefeitura</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mín. Escola</th>
               {#if $session?.profile === 'prefeitura'}
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4"
-                >
-                  <button
-                    on:click={() => openEditModal(product)}
-                    class="text-primary-600 hover:text-primary-800 transition-colors"
-                    >Editar</button
-                  >
-                  <button
-                    on:click={() => openConfirmDeleteModal(product)}
-                    class="text-red-600 hover:text-red-800 transition-colors"
-                    >Excluir</button
-                  >
-                </td>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
               {/if}
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-100">
+            {#each filteredProducts as product (product.id)}
+              <tr class="hover:bg-primary-50/40 transition-all duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
+                  {product.name}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {product.unit}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {product.minStockPrefeitura}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {product.minStockEscola}
+                </td>
+                {#if $session?.profile === 'prefeitura'}
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                    <button
+                      on:click={() => openEditModal(product)}
+                      class="text-primary-600 hover:text-primary-800 transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      on:click={() => openConfirmDeleteModal(product)}
+                      class="text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                {/if}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </div>
   {/if}
 </div>
@@ -310,22 +256,12 @@
 
 <style>
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
   }
   .animate-fadeIn {
     animation: fadeIn 0.25s ease-out;
   }
-  th:first-child {
-    border-top-left-radius: 1rem;
-  }
-  th:last-child {
-    border-top-right-radius: 1rem;
-  }
+  th:first-child { border-top-left-radius: 1rem; }
+  th:last-child { border-top-right-radius: 1rem; }
 </style>

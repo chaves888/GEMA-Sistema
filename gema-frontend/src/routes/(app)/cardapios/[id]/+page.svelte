@@ -390,7 +390,7 @@
       {/if}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 {gridColsClass} gap-6 mt-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mt-4">
       {#each diasDaSemanaDoCardapio as dia (dia)}
         {@const isHoliday = cardapio?.holidayWeekdays?.includes(dia)}
         {@const specificDate = diaSemanaParaData[dia]}

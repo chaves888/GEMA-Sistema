@@ -148,23 +148,21 @@
     }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 space-y-6 animate-fadeIn">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
   {#if $session}
-    <div
-      class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border"
-    >
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
       <div>
               {#if $session.profile === 'prefeitura'}
-                  <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Dashboard da Prefeitura</h1>
+                  <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Dashboard da Prefeitura</h1>
                   <p class="text-gray-600 mt-1 text-sm">Visão geral do sistema municipal</p>
               {:else if $session.profile === 'escola'}
-                  <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2">Dashboard: {$session.school?.name || ''}</h1>
+                  <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent flex items-center gap-2">Dashboard: {$session.school?.name || ''}</h1>
                   <p class="text-gray-600 mt-1 text-sm">Visão geral do seu estoque e solicitações</p>
               {:else if $session.profile === 'nutricionista'}
-                  <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Dashboard da Nutricionista</h1>
+                  <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Dashboard da Nutricionista</h1>
                   <p class="text-gray-600 mt-1 text-sm">Gerencie cardápios e rascunhos</p>
               {:else if $session.profile === 'cozinheira'}
-                  <h1 class="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Bom dia, Cozinheira!</h1>
+                  <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Bom dia, Cozinheira!</h1>
                   <p class="text-gray-600 mt-1 text-sm">Escola: {$session.school?.name}</p>
               {/if}
           </div>
@@ -177,14 +175,12 @@
         <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando...</p>
       </div>
     {:else if error}
-      <div
-        class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium"
-      >
+      <div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
         {error}
       </div>
     {:else if dashboardData && $session}
       {#if $session.profile === 'prefeitura'}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
           <a href="/usuarios" class="stat-card card-blue">
             <div class="icon-wrapper"><Users size={32} /></div>
             <div class="text-content">
@@ -238,6 +234,7 @@
                 <a href="/estoque" class="btn-link btn-secondary">Ver Estoque Central</a>
             </div>
         {/if}
+
         {#if dashboardData.schoolStocks?.length > 0}
             <div class="panel">
                 <div class="panel-header">
@@ -248,8 +245,8 @@
                     {#each dashboardData.schoolStocks as schoolStock (schoolStock.schoolId)}
                         <button type="button" class="school-stat-card {schoolStock.criticalItemsCount > 0 ? 'is-critical' : ''}" on:click={() => openSchoolStockModal(schoolStock)}>
                             <div class="school-card-header">
-                                <h4 class="font-semibold text-gray-800">{schoolStock.schoolName}</h4>
-                                <span class="text-xs text-gray-500">{schoolStock.city}</span>
+                                <h4 class="font-semibold text-gray-800 text-left">{schoolStock.schoolName}</h4>
+                                <span class="text-xs text-gray-500 block text-left">{schoolStock.city}</span>
                             </div>
                             <div class="school-card-body">
                                 <span class="count {schoolStock.criticalItemsCount > 0 ? 'text-red-600' : 'text-green-600'}">
@@ -269,7 +266,7 @@
       {/if}
 
       {#if $session.profile === 'escola'}
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
               <a href="/estoque" class="stat-card card-red">
                   <div class="icon-wrapper"><AlertTriangle size={32} /></div>
                   <div class="text-content">
@@ -345,7 +342,7 @@
       {/if}
 
       {#if $session.profile === 'nutricionista'}
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-10">
               <a href="/cardapios?status=rascunho" class="stat-card card-yellow">
                   <div class="icon-wrapper"><FileText size={32} /></div>
                   <div class="text-content">
@@ -429,9 +426,7 @@
               {/if}
           </div>
       {/if}
-
-    {:else}
-        {/if}
+    {/if}
   </div>
 </div>
 
@@ -439,7 +434,7 @@
     <Modal show={showSchoolStockModal} on:close={closeSchoolStockModal} size="max-w-3xl">
         <div class="space-y-6">
             <div class="border-b pb-4">
-                <h2 class="text-3xl font-bold text-gray-800">Estoque Crítico/Médio</h2>
+                <h2 class="text-2xl lg:text-3xl font-bold text-gray-800">Estoque Crítico/Médio</h2>
                 <p class="text-sm text-gray-600 mt-2">
                     Escola: <span class="font-semibold">{selectedSchoolStock.schoolName}</span>
                     <span class="text-gray-400 mx-1">|</span>

@@ -93,7 +93,7 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="space-y-6">
-  <h2 class="text-3xl font-bold text-gray-800 border-b pb-4">Nova Solicitação</h2>
+  <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 border-b pb-4">Nova Solicitação</h2>
 
   <div>
     <label for="justificativa" class="block text-sm font-semibold text-gray-700 mb-1">Justificativa (Opcional)</label>
@@ -111,7 +111,6 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
       <div class="md:col-span-2">
         <label for="productSelect" class="block text-sm font-semibold text-gray-700 mb-1">Produto</label>
-        
         <select
           id="productSelect"
           bind:value={selectedProductId}
@@ -148,7 +147,7 @@
       type="button"
       on:click={addProductToRequest}
       disabled={isLoadingProducts || availableProducts.length === 0 || !selectedProductId}
-      class="mt-4 inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+      class="mt-4 w-full md:w-auto inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <PlusCircle class="w-5 h-5" /> Adicionar Item
     </button>
@@ -159,15 +158,15 @@
       <h3 class="text-lg font-semibold text-gray-800 mb-3">Itens na Solicitação</h3>
       <div class="space-y-2 max-h-48 overflow-y-auto pr-2 border rounded-lg p-3 bg-gray-50 shadow-inner">
         {#each items as item, index (item.productId)}
-          <div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-lg shadow-sm border gap-2">
             <div>
-              <span class="font-semibold text-gray-800">{item.productName}</span>
-              <span class="text-sm text-gray-600 ml-2">({item.quantityRequested} {item.productUnit})</span>
+              <span class="font-semibold text-gray-800 block">{item.productName}</span>
+              <span class="text-sm text-gray-600">({item.quantityRequested} {item.productUnit})</span>
             </div>
             <button
               type="button"
               on:click={() => removeItem(index)}
-              class="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-100 transition-colors"
+              class="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-100 transition-colors self-end sm:self-auto"
               aria-label="Remover item"
             >
               <Trash2 class="w-4 h-4" />
@@ -178,17 +177,17 @@
     </div>
   {/if}
 
-  <div class="mt-8 flex justify-end space-x-4 border-t pt-6">
+  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 border-t pt-6">
     <button
       type="button"
       on:click={() => dispatch('cancel')}
-      class="bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm"
+      class="w-full sm:w-auto bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm"
     >
       Cancelar
     </button>
     <button
       type="submit"
-      class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105 disabled:opacity-50"
+      class="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105 disabled:opacity-50"
       disabled={items.length === 0}
     >
       Enviar Solicitação

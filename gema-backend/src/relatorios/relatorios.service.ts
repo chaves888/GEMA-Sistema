@@ -510,9 +510,10 @@ export class RelatoriosService {
     };
   }
 
+  // --- ATUALIZADO: MÉTODO DE ENVIO DE E-MAIL ---
   async enviarRelatorioAjustesEscolas(
     dto: GerarRelatorioSolicitacoesDto,
-    requester: User, // Usuário (Prefeitura) que solicitou o envio
+    requester: User,
   ) {
     // 1. Gera os dados do relatório
     const reportData = await this.gerarRelatorioAjustesEscolas(dto);
@@ -526,6 +527,35 @@ export class RelatoriosService {
       { quantidadeTotal: 0 },
     );
 
+    // --- NOVA LÓGICA DE FORMATAÇÃO (Resolve o erro do Handlebars) ---
+    const reportDataFormatado = reportData.map((row) => {
+      let motivoLabel = row.motivoCategoria.toString();
+      let cssClass = '';
+
+      // Define o texto bonito
+      switch (row.motivoCategoria) {
+        case MotivoMovimentacao.PERDA: motivoLabel = 'Perda / Avaria'; break;
+        case MotivoMovimentacao.VENCIMENTO: motivoLabel = 'Vencimento'; break;
+        case MotivoMovimentacao.USO_INTERNO: motivoLabel = 'Uso Interno'; break;
+        case MotivoMovimentacao.AJUSTE: motivoLabel = 'Ajuste'; break;
+        case MotivoMovimentacao.OUTRO: motivoLabel = 'Outro'; break;
+      }
+
+      // Define a cor (classe CSS)
+      if ([MotivoMovimentacao.PERDA, MotivoMovimentacao.VENCIMENTO].includes(row.motivoCategoria)) {
+        cssClass = 'motivo-perda';
+      } else if ([MotivoMovimentacao.USO_INTERNO, MotivoMovimentacao.OUTRO].includes(row.motivoCategoria)) {
+        cssClass = 'motivo-outro';
+      }
+
+      return {
+        ...row,
+        motivoLabel, // Enviamos o texto pronto
+        cssClass,    // Enviamos a classe pronta
+      };
+    });
+    // --- FIM DA NOVA LÓGICA ---
+
     // 3. Busca os e-mails dos Gestores de Escola
     const gestores = await this.usersService.findAllByProfile(UserProfile.ESCOLA);
     const emailsBcc = gestores.map((g) => g.email).filter(Boolean);
@@ -534,21 +564,21 @@ export class RelatoriosService {
       throw new NotFoundException('Nenhum gestor de escola ativo encontrado para enviar o e-mail.');
     }
 
-    // 4. Formata datas para o template
+    // 4. Formata datas
     const dataInicioFmt = format(parseISO(dto.startDate), 'dd/MM/yyyy', { locale: ptBR });
     const dataFimFmt = format(parseISO(dto.endDate), 'dd/MM/yyyy', { locale: ptBR });
 
     // 5. Envia o e-mail
     try {
       await this.mailerService.sendMail({
-        to: requester.email, // Envia para quem solicitou
-        bcc: emailsBcc, // Envia em cópia oculta para todos os gestores
+        to: requester.email,
+        bcc: emailsBcc,
         subject: `[GEMA] Relatório de Ajustes e Perdas nas Escolas (${dataInicioFmt} a ${dataFimFmt})`,
-        template: 'relatorio-ajustes-escolas', // <-- Novo template .hbs
+        template: 'relatorio-ajustes-escolas',
         context: {
           dataInicio: dataInicioFmt,
           dataFim: dataFimFmt,
-          reportData: reportData,
+          reportData: reportDataFormatado, // <-- Passamos os dados formatados
           totalGeral: totalGeral,
           requesterName: requester.name,
         },
