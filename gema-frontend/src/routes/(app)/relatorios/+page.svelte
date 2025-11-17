@@ -72,7 +72,7 @@
             <Warehouse class="w-6 h-6" />
           </div>
           <div>
-            <p class="text-sm font-medium text-gray-500">Perdas (Central)</p>
+            <p class="text-sm font-medium text-gray-500">Saidas (Estoque Central)</p>
             <p class="text-2xl lg:text-3xl font-bold text-gray-900">{snapshotData.totalPerdasPrefeitura}</p>
           </div>
         </div>
@@ -81,7 +81,7 @@
             <ArchiveX class="w-6 h-6" />
           </div>
           <div>
-            <p class="text-sm font-medium text-gray-500">Perdas (Escolas)</p>
+            <p class="text-sm font-medium text-gray-500">Saidas (Estoque Escolas)</p>
             <p class="text-2xl lg:text-3xl font-bold text-gray-900">{snapshotData.totalPerdasEscolas}</p>
           </div>
         </div>
@@ -117,7 +117,7 @@
           <Warehouse class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="report-card-title">Ajustes e Perdas (Central)</h2>
+          <h2 class="report-card-title">Saidas (Estoque Central)</h2>
           <p class="report-card-description">Auditoria de perdas e ajustes manuais no estoque central.</p>
         </div>
       </a>
@@ -127,7 +127,7 @@
           <ArchiveX class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="report-card-title">Ajustes e Perdas (Escolas)</h2>
+          <h2 class="report-card-title">Saidas (Estoque Escolas)</h2>
           <p class="report-card-description">Monitora perdas e ajustes manuais reportados pelas escolas.</p>
         </div>
       </a>

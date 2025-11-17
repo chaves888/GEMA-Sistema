@@ -2,23 +2,16 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import * as api from '$lib/api';
-  // --- Ajustar tipo Cardapio para incluir holidayWeekdays ---
   import type { Cardapio as CardapioType, Refeicao } from '$lib/types';
   import { session } from '$lib/sessionStore';
-  // --- Importar mais helpers de data ---
-  import { format, parseISO, eachDayOfInterval, getDay, addDays } from 'date-fns';
+  import { format, parseISO, eachDayOfInterval, getDay } from 'date-fns';
   import { ptBR } from 'date-fns/locale';
-  // --- Importar mais ícones ---
-  import { PlusCircle, Edit, Trash2, ArrowLeft, Send, CalendarOff } from 'lucide-svelte';
+  import { PlusCircle, ArrowLeft, Send, CalendarOff } from 'lucide-svelte';
   import Modal from '$lib/components/Modal.svelte';
   import RefeicaoForm from '$lib/components/RefeicaoForm.svelte';
-
-  // --- Imports Adicionados ---
   import { toast } from '$lib/toast';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-  // --- Fim dos Imports ---
 
-  // --- Ajustar tipo Cardapio para incluir holidayWeekdays ---
   type Cardapio = CardapioType & { holidayWeekdays?: string[] };
 
   const diaSemanaMap: { [key: number]: string } = {
@@ -32,18 +25,15 @@
 
   let cardapio: Cardapio | null = null;
   let isLoading = true;
-  let isActionLoading = false; // Para ações gerais (publicar)
-  let isHolidayLoading: Record<string, boolean> = {}; // Loading por dia para feriado
-  let isRefeicaoActionLoading: Record<string, boolean> = {}; // Loading por refeição (excluir)
+  let isActionLoading = false;
+  let isHolidayLoading: Record<string, boolean> = {};
+  let isRefeicaoActionLoading: Record<string, boolean> = {};
   let error: string | null = null;
 
-  // --- Mapa para guardar a data específica de cada dia da semana ---
   let diaSemanaParaData: Record<string, Date> = {};
-
   let diasDaSemanaDoCardapio: string[] = [];
   let refeicoesGrid: Record<string, Record<string, Refeicao | null>> = {};
 
-  // --- Estado dos Modais ---
   let showRefeicaoModal = false;
   let modalData: {
     diaSemana: 'segunda' | 'terça' | 'quarta' | 'quinta' | 'sexta';
@@ -51,16 +41,12 @@
     refeicao: Refeicao | null;
   } | null = null;
 
-  // --- ADICIONADO: Estado para o Modal de Confirmação GENÉRICO ---
   let showConfirmModal = false;
   let confirmTitle = '';
   let confirmMessage = '';
   let confirmButtonText = 'Confirmar';
-  // Esta ação guarda a função que deve ser executada ao confirmar
   let confirmAction: () => Promise<void> | void = () => {};
-  // --- FIM DA ADIÇÃO ---
 
-  // --- Lógica reativa para verificar se pode publicar ---
   let canPublish = false;
   $: if (cardapio && cardapio.status === 'rascunho') {
     canPublish = diasDaSemanaDoCardapio.every((dia) => {
@@ -70,7 +56,6 @@
   } else {
     canPublish = false;
   }
-  // --- FIM LÓGICA REATIVA ---
 
   onMount(async () => {
     await loadCardapio();
@@ -90,13 +75,11 @@
     } catch (e: any) {
       error = e.message || 'Não foi possível carregar o cardápio.';
       console.error(e);
-      // Aqui o toast não é necessário, pois a UI exibe o 'error'
     } finally {
       isLoading = false;
     }
   }
 
-  // --- Calcula datas específicas e organiza grid ---
   function setupDatesAndMeals(currentCardapio: Cardapio) {
     const start = parseISO(currentCardapio.startDate);
     const end = parseISO(currentCardapio.endDate);
@@ -130,7 +113,6 @@
     organizeRefeicoes(currentCardapio.refeicoes || [], diasDaSemanaDoCardapio);
   }
 
-  // Função organizeRefeicoes atualizada para receber os dias
   function organizeRefeicoes(refeicoes: Refeicao[] = [], diasAtuais: string[]) {
     const grid: Record<string, Record<string, Refeicao | null>> = {};
     for (const dia of diasAtuais) {
@@ -141,17 +123,6 @@
     refeicoesGrid = grid;
   }
 
-  function formatLocalDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    try {
-      const date = parseISO(dateString);
-      return format(date, 'dd/MM/yyyy', { locale: ptBR });
-    } catch (e) {
-      return 'Data Inválida';
-    }
-  }
-
-  // --- ADICIONADO: Funções para o Modal de Confirmação GENÉRICO ---
   function openConfirmModal(
     title: string,
     message: string,
@@ -166,8 +137,8 @@
   }
 
   async function handleConfirm() {
-    await confirmAction(); // Executa a ação armazenada
-    handleCancel(); // Fecha e limpa o modal
+    await confirmAction();
+    handleCancel();
   }
 
   function handleCancel() {
@@ -177,9 +148,7 @@
     confirmButtonText = 'Confirmar';
     confirmAction = () => {};
   }
-  // --- FIM DA ADIÇÃO ---
 
-  // --- AÇÕES DA NUTRICIONISTA ---
   function handleAddRefeicao(dia: string, tipo: string) {
     if (
       !$session ||
@@ -219,7 +188,7 @@
     }
     showRefeicaoModal = false;
     modalData = null;
-    toast.success('Refeição salva com sucesso!'); // Toast de sucesso
+    toast.success('Refeição salva com sucesso!');
   }
 
   async function handleDeleteRefeicao(refeicao: Refeicao) {
@@ -234,7 +203,6 @@
     )
       return;
 
-    // --- ALTERADO: 'confirm' removido, lógica movida para 'action' ---
     const deleteAction = async () => {
       isRefeicaoActionLoading = { ...isRefeicaoActionLoading, [refeicaoId]: true };
       try {
@@ -244,9 +212,9 @@
         if (cardapio) {
           cardapio.refeicoes = cardapio.refeicoes.filter((r) => r.id !== refeicao.id);
         }
-        toast.success('Refeição removida com sucesso.'); // <-- TROCA
+        toast.success('Refeição removida com sucesso.');
       } catch (e: any) {
-        toast.error(e?.message || 'Erro ao remover a refeição.'); // <-- TROCA
+        toast.error(e?.message || 'Erro ao remover a refeição.');
         console.error(e);
       } finally {
         isRefeicaoActionLoading = { ...isRefeicaoActionLoading, [refeicaoId]: false };
@@ -259,7 +227,6 @@
       deleteAction,
       'Sim, Remover'
     );
-    // --- FIM DA ALTERAÇÃO ---
   }
 
   async function handleToggleHoliday(dia: string) {
@@ -270,7 +237,6 @@
     const actionText = currentlyIsHoliday ? 'desmarcar como feriado' : 'marcar como FERIADO';
     const cardapioId = cardapio.id;
 
-    // --- ALTERADO: 'confirm' removido, lógica movida para 'action' ---
     const toggleAction = async () => {
       isHolidayLoading = { ...isHolidayLoading, [dia]: true };
       try {
@@ -282,9 +248,9 @@
           cardapio.holidayWeekdays = updatedCardapio.holidayWeekdays;
           cardapio = { ...cardapio };
         }
-        toast.success(`Dia ${currentlyIsHoliday ? 'desmarcado' : 'marcado'} como feriado.`); // <-- TROCA
+        toast.success(`Dia ${currentlyIsHoliday ? 'desmarcado' : 'marcado'} como feriado.`);
       } catch (e: any) {
-        toast.error(e?.message || `Erro ao ${actionText}.`); // <-- TROCA
+        toast.error(e?.message || `Erro ao ${actionText}.`);
         console.error(e);
       } finally {
         isHolidayLoading = { ...isHolidayLoading, [dia]: false };
@@ -297,7 +263,6 @@
       toggleAction,
       currentlyIsHoliday ? 'Sim, Desmarcar' : 'Sim, Marcar'
     );
-    // --- FIM DA ALTERAÇÃO ---
   }
 
   async function handlePublish() {
@@ -305,7 +270,6 @@
 
     const cardapioId = cardapio.id;
 
-    // --- ALTERADO: 'confirm' removido, lógica movida para 'action' ---
     const publishAction = async () => {
       isActionLoading = true;
       try {
@@ -314,9 +278,9 @@
           cardapio.status = publishedCardapio.status;
           cardapio = { ...cardapio };
         }
-        toast.success('Cardápio publicado com sucesso!'); // <-- TROCA
+        toast.success('Cardápio publicado com sucesso!');
       } catch (e: any) {
-        toast.error(e?.message || 'Erro ao publicar o cardápio.'); // <-- TROCA
+        toast.error(e?.message || 'Erro ao publicar o cardápio.');
         console.error(e);
       } finally {
         isActionLoading = false;
@@ -329,18 +293,10 @@
       publishAction,
       'Sim, Publicar'
     );
-    // --- FIM DA ALTERAÇÃO ---
   }
-
-  $: gridColsClass =
-    diasDaSemanaDoCardapio.length >= 5
-      ? 'lg:grid-cols-5'
-      : diasDaSemanaDoCardapio.length === 4
-        ? 'lg:grid-cols-4'
-        : 'lg:grid-cols-3';
 </script>
 
-<div class="space-y-6 animate-fadeIn pb-10">
+<div class="space-y-6 animate-fadeIn pb-10 p-4 md:p-6">
   <div class="mb-2">
     <a
       href="/cardapios"
@@ -362,8 +318,8 @@
     <div
       class="flex flex-col md:flex-row justify-between items-start gap-4 bg-gradient-to-r from-primary-50 to-white p-6 rounded-xl shadow-md border border-gray-100"
     >
-      <div class="space-y-2">
-        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{cardapio.name}</h1>
+      <div class="space-y-2 flex-1 min-w-0 w-full">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight break-words">{cardapio.name}</h1>
         <p class="text-sm text-gray-400">
           Criado por: <span class="font-medium text-gray-600">{cardapio.createdBy?.name || '(Usuário Excluído)'}</span>
         </p>
@@ -380,7 +336,7 @@
         <button
           on:click={handlePublish}
           disabled={isActionLoading || !canPublish}
-          class="flex items-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full md:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           title={!canPublish
             ? 'Preencha todas as refeições (manhã e tarde) dos dias úteis não feriados para poder publicar.'
             : 'Publicar cardápio'}
@@ -390,24 +346,24 @@
       {/if}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mt-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mt-4">
       {#each diasDaSemanaDoCardapio as dia (dia)}
         {@const isHoliday = cardapio?.holidayWeekdays?.includes(dia)}
         {@const specificDate = diaSemanaParaData[dia]}
         <div
-          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:scale-[1.01] transition-all overflow-hidden flex flex-col {isHoliday
-            ? 'bg-gray-100 opacity-70'
+          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col {isHoliday
+            ? 'bg-gray-100 opacity-80'
             : ''}"
         >
           <div
-            class="bg-gradient-to-r from-primary-600/10 to-primary-50 p-3 border-b text-center relative min-h-[70px] flex flex-col justify-center"
+            class="bg-gradient-to-r from-primary-600/10 to-primary-50 p-3 border-b text-center relative min-h-[60px] flex flex-col justify-center"
           >
             <h2 class="text-lg font-semibold text-primary-700 capitalize tracking-wide">
               {dia}{specificDate ? ` - ${format(specificDate, 'dd/MM')}` : ''}
             </h2>
             {#if isHoliday}
               <span
-                class="absolute top-2 right-2 text-xs bg-gray-500 text-white px-2 py-0.5 rounded font-semibold shadow-sm"
+                class="absolute top-2 right-2 text-[10px] bg-gray-500 text-white px-1.5 py-0.5 rounded font-semibold shadow-sm"
                 >FERIADO</span
               >
             {/if}
@@ -420,28 +376,17 @@
               >
                 {#if isHolidayLoading[dia]}
                   <svg
-                    class="animate-spin h-5 w-5 text-primary-600"
+                    class="animate-spin h-4 w-4 text-primary-600"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    ></path>
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                   </svg>
                 {:else}
                   <CalendarOff
-                    class="w-5 h-5 {isHoliday
+                    class="w-4 h-4 {isHoliday
                       ? 'text-red-600'
                       : 'text-gray-400 hover:text-gray-600'}"
                   />
@@ -451,23 +396,25 @@
           </div>
 
           <div class="flex flex-col divide-y flex-1">
-            <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
-              <h4 class="meal-header morning">☀️ Manhã</h4>
+            <div class="p-4 space-y-2 flex flex-col flex-1">
+              <h4 class="meal-header morning text-sm">☀️ Manhã</h4>
               {#if refeicoesGrid[dia]?.manha && !isHoliday}
                 {@const refeicao = refeicoesGrid[dia]['manha']}
-                <div
-                  class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
-                >
-                  <p class="text-base font-medium italic text-gray-800 mb-1">
-                    “{refeicao.description}”
-                  </p>
-                  <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
-                    {#each refeicao.products as item (item.id)}
-                      <li>{item?.name || '(Produto Excluído)' }</li>
-                    {/each}
-                  </ul>
+                <div class="flex-1 flex flex-col">
+                    <div
+                        class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
+                    >
+                        <p class="text-sm font-medium italic text-gray-800 mb-1 break-words">
+                        “{refeicao.description}”
+                        </p>
+                        <ul class="list-disc list-inside text-xs text-gray-600 space-y-0.5">
+                        {#each refeicao.products as item (item.id)}
+                            <li class="truncate">{item?.name || '(Produto Excluído)' }</li>
+                        {/each}
+                        </ul>
+                    </div>
                   {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'}
-                    <div class="flex gap-3 mt-3 pt-2 border-t border-gray-200">
+                    <div class="flex gap-2 mt-2 justify-end">
                       <button
                         on:click={() => handleEditRefeicao(refeicao)}
                         class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50"
@@ -487,37 +434,40 @@
                 <button
                   on:click={() => handleAddRefeicao(dia, 'manha')}
                   disabled={isActionLoading || isHoliday}
-                  class="w-full flex-1 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-3 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar
                 </button>
               {:else if !isHoliday}
-                <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">
+                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
                   (Sem refeição)
                 </p>
               {:else}
-                <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">
+                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
                   (Feriado)
                 </p>
               {/if}
             </div>
-            <div class="p-5 space-y-3 min-h-[150px] flex flex-col">
-              <h4 class="meal-header afternoon">🌇 Tarde (15h)</h4>
+
+            <div class="p-4 space-y-2 flex flex-col flex-1">
+              <h4 class="meal-header afternoon text-sm">🌇 Tarde</h4>
               {#if refeicoesGrid[dia]?.tarde && !isHoliday}
                 {@const refeicao = refeicoesGrid[dia]['tarde']}
-                <div
-                  class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
-                >
-                  <p class="text-base font-medium italic text-gray-800 mb-1">
-                    “{refeicao.description}”
-                  </p>
-                  <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
-                    {#each refeicao.products as item (item.id)}
-                      <li>{item?.name || '(Produto Excluído)' }</li>
-                    {/each}
-                  </ul>
+                <div class="flex-1 flex flex-col">
+                    <div
+                        class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
+                    >
+                        <p class="text-sm font-medium italic text-gray-800 mb-1 break-words">
+                        “{refeicao.description}”
+                        </p>
+                        <ul class="list-disc list-inside text-xs text-gray-600 space-y-0.5">
+                        {#each refeicao.products as item (item.id)}
+                            <li class="truncate">{item?.name || '(Produto Excluído)' }</li>
+                        {/each}
+                        </ul>
+                    </div>
                   {#if $session?.profile === 'nutricionista' && cardapio?.status === 'rascunho'}
-                    <div class="flex gap-3 mt-3 pt-2 border-t border-gray-200">
+                    <div class="flex gap-2 mt-2 justify-end">
                       <button
                         on:click={() => handleEditRefeicao(refeicao)}
                         class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50"
@@ -537,16 +487,16 @@
                 <button
                   on:click={() => handleAddRefeicao(dia, 'tarde')}
                   disabled={isActionLoading || isHoliday}
-                  class="w-full flex-1 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-3 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar
                 </button>
               {:else if !isHoliday}
-                <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">
+                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
                   (Sem refeição)
                 </p>
               {:else}
-                <p class="text-sm text-gray-400 italic flex-1 flex items-center justify-center">
+                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
                   (Feriado)
                 </p>
               {/if}
@@ -589,32 +539,31 @@
     on:cancel={handleCancel}
   />
 </Modal>
+
 <style>
-
   .meal-header {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-/* ☀️ Manhã */
-.meal-header.morning {
-  color: #92400e; /* amber-800 */
-  background: linear-gradient(to right, #fef3c7, #fde68a); /* amarelo suave */
-  border-left: 4px solid #f59e0b; /* amber-500 */
-}
+  /* ☀️ Manhã */
+  .meal-header.morning {
+    color: #92400e; /* amber-800 */
+    background: linear-gradient(to right, #fef3c7, #fde68a); /* amarelo suave */
+    border-left: 4px solid #f59e0b; /* amber-500 */
+  }
 
-/* 🌇 Tarde */
-.meal-header.afternoon {
-  color: #7c2d12; /* orange-900 */
-  background: linear-gradient(to right, #ffedd5, #fed7aa); /* laranja suave */
-  border-left: 4px solid #fb923c; /* orange-400 */
-}
+  /* 🌇 Tarde */
+  .meal-header.afternoon {
+    color: #7c2d12; /* orange-900 */
+    background: linear-gradient(to right, #ffedd5, #fed7aa); /* laranja suave */
+    border-left: 4px solid #fb923c; /* orange-400 */
+  }
 
   @keyframes fadeIn {
     from {
