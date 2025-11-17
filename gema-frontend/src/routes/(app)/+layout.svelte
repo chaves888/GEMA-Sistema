@@ -1,4 +1,4 @@
-<script lang="ts">
+	<script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { session, initializeSession, pendingSolicitacoesCount } from '$lib/sessionStore';
@@ -18,6 +18,7 @@
 		ClipboardList,
 		BookOpen,
 		FileText,
+		User as UserIcon
 	} from 'lucide-svelte';
 
 	onMount(() => {
@@ -32,6 +33,14 @@
 		window.location.href = '/';
 	}
 
+	// --- Lógica para pegar as Iniciais do Nome ---
+	function getInitials(name: string | undefined): string {
+		if (!name) return 'US'; // User System
+		const parts = name.trim().split(' ');
+		if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+		return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+	}
+
 	$: pathname = $page.url.pathname;
 	$: activeDashboard = pathname === '/dashboard';
 	$: activeUsuarios = pathname.startsWith('/usuarios');
@@ -43,160 +52,161 @@
 	$: activeSolicitacoes = pathname.startsWith('/solicitacoes');
 	$: activeRelatorios = pathname.startsWith('/relatorios');
 
-	const sidebarBg = 'bg-primary-800';
-	const primaryText = 'text-primary-300';
-
-	const activeStyle = 'bg-white text-primary-800 font-semibold shadow-md rounded-lg';
-	const inactiveStyle = 'text-white hover:bg-primary-700 rounded-lg';
+	const sidebarBg = 'bg-primary-900';
+	const activeStyle = 'bg-white/10 text-white font-semibold shadow-sm rounded-lg border-l-4 border-accent-500';
+	const inactiveStyle = 'text-gray-300 hover:bg-white/5 hover:text-white rounded-lg transition-all';
 
 	let initialCountLoaded = false;
 	$: if ($session?.profile === 'prefeitura' && !initialCountLoaded && browser) {
 		async function loadPendingCount() {
-			try {
-				const data = await api.get('solicitacoes/pendentes/count');
-				pendingSolicitacoesCount.set(data.count);
-				initialCountLoaded = true; // Marca como carregado
-			} catch (e) {
-				console.error('Erro ao carregar contagem de pendentes:', e);
-			}
+		try {
+			const data = await api.get('solicitacoes/pendentes/count');
+			pendingSolicitacoesCount.set(data.count);
+			initialCountLoaded = true; 
+		} catch (e) {
+			console.error('Erro ao carregar contagem:', e);
+		}
 		}
 		loadPendingCount();
 	}
-</script>
+	</script>
 
-<div class="flex h-screen bg-gray-100 overflow-hidden">
-	<aside class="w-64 {sidebarBg} text-white flex flex-col shadow-xl flex-shrink-0">
-		<div class="h-20 flex items-center justify-start px-5 border-b border-primary-700 flex-shrink-0">
-			<img src={GemaLogo} alt="Logo GEMA" class="h-14 w-auto" />
+	<div class="flex h-screen bg-gray-50 overflow-hidden font-sans">
+	<aside 
+ 		class="w-72 text-white flex flex-col shadow-2xl flex-shrink-0 transition-all duration-300"
+  		style="background-color: #0D47A1;" 
+	>
+		
+		<div class="h-24 flex items-center justify-center border-b border-white/10 flex-shrink-0 bg-primary-950/30">
+		<img src={GemaLogo} alt="Logo GEMA" class="h-16 w-auto drop-shadow-md" />
 		</div>
 
 		{#if $session}
-			<nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-				<a
-					href="/dashboard"
-					class="flex items-center gap-3 p-2 transition-colors {activeDashboard
-						? activeStyle
-						: inactiveStyle}"
-				>
-					<LayoutDashboard class="w-5 h-5 flex-shrink-0" />
-					<span>Dashboard</span>
-				</a>
+		<nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+			<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+			
+			<a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeDashboard ? activeStyle : inactiveStyle}">
+			<LayoutDashboard class="w-5 h-5" /> <span>Dashboard</span>
+			</a>
 
-				{#if $session.profile === 'prefeitura'}
-					<a
-						href="/usuarios"
-						class="flex items-center gap-3 p-2 transition-colors {activeUsuarios
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<Users class="w-5 h-5 flex-shrink-0" /> <span>Usuários</span>
-					</a>
-					<a
-						href="/cidades"
-						class="flex items-center gap-3 p-2 transition-colors {activeCidades
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<Building2 class="w-5 h-5 flex-shrink-0" /> <span>Cidades</span>
-					</a>
-					<a
-						href="/escolas"
-						class="flex items-center gap-3 p-2 transition-colors {activeEscolas
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<School class="w-5 h-5 flex-shrink-0" /> <span>Escolas</span>
-					</a>
-				{/if}
+			{#if $session.profile === 'prefeitura'}
+			<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Cadastros</p>
+			<a href="/usuarios" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeUsuarios ? activeStyle : inactiveStyle}">
+				<Users class="w-5 h-5" /> <span>Usuários</span>
+			</a>
+			<a href="/cidades" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeCidades ? activeStyle : inactiveStyle}">
+				<Building2 class="w-5 h-5" /> <span>Cidades</span>
+			</a>
+			<a href="/escolas" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeEscolas ? activeStyle : inactiveStyle}">
+				<School class="w-5 h-5" /> <span>Escolas</span>
+			</a>
 
-				<a
-					href="/cardapios"
-					class="flex items-center gap-3 p-2 transition-colors {activeCardapios
-						? activeStyle
-						: inactiveStyle}"
-				>
-					<BookOpen class="w-5 h-5 flex-shrink-0" /> <span>Cardápios</span>
-				</a>
+			{#if $session.profile === 'prefeitura' || $session.profile === 'nutricionista' || $session.profile === 'escola'}
+			<a href="/produtos" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeProdutos ? activeStyle : inactiveStyle}">
+				<Package class="w-5 h-5" /> <span>Produtos</span>
+			</a>
+			{/if}
+			
+			{/if}
 
-				{#if $session.profile === 'prefeitura' || $session.profile === 'nutricionista' || $session.profile === 'escola'}
-					<a
-						href="/produtos"
-						class="flex items-center gap-3 p-2 transition-colors {activeProdutos
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<Package class="w-5 h-5 flex-shrink-0" /> <span>Produtos</span>
-					</a>
-				{/if}
+			<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Gestão</p>
+			
+			<a href="/cardapios" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeCardapios ? activeStyle : inactiveStyle}">
+			<BookOpen class="w-5 h-5" /> <span>Cardápios</span>
+			</a>
 
-				{#if $session.profile === 'prefeitura' || $session.profile === 'escola' || $session.profile === 'cozinheira'}
-					<a
-						href="/estoque"
-						class="flex items-center gap-3 p-2 transition-colors {activeEstoque
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<Boxes class="w-5 h-5 flex-shrink-0" /> <span>Estoque</span>
-					</a>
-				{/if}
-				{#if $session.profile === 'prefeitura' || $session.profile === 'escola'}
-					<a
-						href="/solicitacoes"
-						class="relative flex items-center justify-between p-2 transition-colors {activeSolicitacoes
-							? activeStyle
-							: inactiveStyle}"
-					>
-						<div class="flex items-center gap-3">
-							<ClipboardList class="w-5 h-5 flex-shrink-0" />
-							<span>Solicitações</span>
-						</div>
-						{#if $session.profile === 'prefeitura' && $pendingSolicitacoesCount > 0}
-							<span
-								class="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow"
-							>
-								{$pendingSolicitacoesCount}
-							</span>
-						{/if}
-					</a>
-				{/if}
-				{#if $session.profile === 'prefeitura'}
-         			<a
-            			href="/relatorios"
-            			class="flex items-center gap-3 p-2 transition-colors {activeRelatorios
-              				? activeStyle
-              				: inactiveStyle}"
-          			>
-            			<FileText class="w-5 h-5 flex-shrink-0" />
-            			<span>Relatórios</span>
-          			</a>
-        {/if}
-			</nav>
 
-			<div class="p-4 border-t border-primary-700 mt-auto flex-shrink-0">
-				<div class="mb-3 space-y-0.5">
-					<p class="font-semibold text-sm truncate">{$session.email}</p>
-					<p class="text-xs text-primary-400 capitalize">{$session.profile.replace('_', ' ')}</p>
-					{#if ($session.profile === 'escola' || $session.profile === 'cozinheira') && $session.school}
-						<div class="flex items-center gap-1 text-xs text-primary-200 pt-1">
-							<School class="w-3 h-3 flex-shrink-0" />
-							<span class="truncate">{$session.school.name}</span>
-						</div>
-					{/if}
+			{#if $session.profile === 'prefeitura' || $session.profile === 'escola' || $session.profile === 'cozinheira'}
+			<a href="/estoque" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeEstoque ? activeStyle : inactiveStyle}">
+				<Boxes class="w-5 h-5" /> <span>Estoque</span>
+			</a>
+			{/if}
+
+			{#if $session.profile === 'prefeitura' || $session.profile === 'escola'}
+			<a href="/solicitacoes" class="relative flex items-center justify-between px-3 py-2.5 text-sm {activeSolicitacoes ? activeStyle : inactiveStyle}">
+				<div class="flex items-center gap-3">
+				<ClipboardList class="w-5 h-5" /> <span>Solicitações</span>
 				</div>
-				<button
-					on:click={handleLogout}
-					class="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg shadow transition"
-				>
-					<LogOut class="w-4 h-4 flex-shrink-0" /> Sair
-				</button>
+				{#if $session.profile === 'prefeitura' && $pendingSolicitacoesCount > 0}
+				<span class="flex h-5 min-w-[1.25rem] px-1.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-primary-900">
+					{$pendingSolicitacoesCount}
+				</span>
+				{/if}
+			</a>
+			{/if}
+
+			{#if $session.profile === 'prefeitura'}
+			<a href="/relatorios" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeRelatorios ? activeStyle : inactiveStyle}">
+				<FileText class="w-5 h-5" /> <span>Relatórios</span>
+			</a>
+			{/if}
+		</nav>
+
+		<div class="border-t border-white/10 bg-black/20">
+			
+			<div class="px-4 pt-4 pb-3">
+			<div class="flex items-center gap-3">
+				<div class="h-10 w-10 rounded-full bg-accent-500 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-white/10 flex-shrink-0">
+				{getInitials($session.name)}
+				</div>
+				
+				<div class="flex-1 min-w-0">
+				<p class="text-sm font-bold text-white truncate leading-tight">
+					{$session.name || 'Usuário'}
+				</p>
+				<p class="text-xs text-gray-400 truncate">
+					{$session.email}
+				</p>
+				<div class="flex items-center gap-2 mt-1">
+					<span class="inline-flex items-center rounded-md bg-primary-950/50 px-1.5 py-0.5 text-[10px] font-medium text-accent-200 ring-1 ring-inset ring-accent-500/20 capitalize">
+					{$session.profile?.replace('_', ' ')}
+					</span>
+				</div>
+				</div>
 			</div>
+
+			{#if ($session.profile === 'escola' || $session.profile === 'cozinheira') && $session.school}
+				<div class="mt-2 flex items-center gap-2 text-xs text-gray-300 bg-white/5 p-1.5 rounded-md">
+				<School class="w-3 h-3 text-accent-400 flex-shrink-0" />
+				<span class="truncate font-medium">{$session.school.name}</span>
+				</div>
+			{/if}
+			</div>
+
+			<div class="px-4 pb-4">
+			<button
+				on:click={handleLogout}
+				class="w-full flex items-center justify-center gap-2 bg-red-600/90 hover:bg-red-600 text-white font-medium py-2 rounded-lg shadow-md transition-all active:scale-95 text-sm"
+			>
+				<LogOut class="w-4 h-4" /> Sair do Sistema
+			</button>
+			</div>
+
+		</div>
 		{/if}
 	</aside>
 
 	<div class="flex-1 flex flex-col overflow-hidden">
-		<main class="flex-1 p-6 overflow-y-auto bg-gray-50">
-			<slot />
+		<main class="flex-1 p-6 overflow-y-auto bg-gray-50 scroll-smooth">
+		<slot />
 		</main>
 	</div>
 	<Notifications />
-</div>
+	</div>
+
+	<style>
+	/* Estilização fina da barra de rolagem do menu */
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 4px;
+	}
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 2px;
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+	</style>

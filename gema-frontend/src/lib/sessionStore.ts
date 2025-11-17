@@ -18,7 +18,8 @@ export function initializeSession() {
           id: decodedToken.sub,
           email: decodedToken.email,
           profile: decodedToken.profile,
-          school: decodedToken.school // <-- ADICIONADO
+          school: decodedToken.school,
+          name: decodedToken.name 
         });
       } catch (e) {
         localStorage.removeItem('gema_token');

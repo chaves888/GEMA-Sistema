@@ -1,10 +1,8 @@
 <script lang="ts">
-  // --- 1. ADICIONAR IMPORTS ---
   import { onMount } from 'svelte';
   import * as api from '$lib/api';
-  import { Boxes, ClipboardList, ArchiveX, Warehouse, Truck } from 'lucide-svelte'; // Adicionado Truck
+  import { Boxes, ClipboardList, ArchiveX, Warehouse, Truck, PackagePlus } from 'lucide-svelte'; // Adicionado Truck
 
-  // --- 2. ADICIONAR ESTADO PARA O SNAPSHOT ---
   let snapshotData: {
     totalSolicitacoes: number;
     totalItensEnviados: number;
@@ -13,13 +11,11 @@
   } | null = null;
   let isLoadingSnapshot = true;
 
-  // --- 3. FUNÇÃO PARA BUSCAR OS DADOS DO SNAPSHOT ---
   onMount(async () => {
     try {
       snapshotData = await api.get('relatorios/snapshot');
     } catch (e) {
       console.error('Erro ao carregar snapshot:', e);
-      // Não precisa de toast aqui, a UI vai lidar com o estado nulo
     } finally {
       isLoadingSnapshot = false;
     }
@@ -70,7 +66,6 @@
             <p class="text-3xl font-bold text-gray-900">{snapshotData.totalSolicitacoes}</p>
           </div>
         </div>
-
         <div
           class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex items-center gap-5"
         >
@@ -82,7 +77,6 @@
             <p class="text-3xl font-bold text-gray-900">{snapshotData.totalItensEnviados}</p>
           </div>
         </div>
-        
         <div
           class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex items-center gap-5"
         >
@@ -94,7 +88,6 @@
             <p class="text-3xl font-bold text-gray-900">{snapshotData.totalPerdasPrefeitura}</p>
           </div>
         </div>
-
         <div
           class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex items-center gap-5"
         >
@@ -109,19 +102,20 @@
       </div>
     {/if}
   </div>
+
   <div class="mt-8 pt-6 border-t border-gray-200">
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Relatórios Detalhados</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <a
         href="/relatorios/solicitacoes-por-escola"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 flex items-start gap-5"
+        class="report-card"
       >
-        <div class="flex-shrink-0 bg-primary-100 text-primary-600 p-3 rounded-full">
+        <div class="report-card-icon bg-primary-100 text-primary-600">
           <ClipboardList class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800">Solicitações por Escola</h2>
-          <p class="text-sm text-gray-600 mt-1">
+          <h2 class="report-card-title">Solicitações por Escola</h2>
+          <p class="report-card-description">
             Consolidado de pedidos e taxa de atendimento por escola.
           </p>
         </div>
@@ -129,51 +123,68 @@
 
       <a
         href="/relatorios/envios-estoque"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 flex items-start gap-5"
+        class="report-card"
       >
-        <div class="flex-shrink-0 bg-green-100 text-green-600 p-3 rounded-full">
+        <div class="report-card-icon bg-green-100 text-green-600">
           <Boxes class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800">Envios (Estoque Central)</h2>
-          <p class="text-sm text-gray-600 mt-1">
+          <h2 class="report-card-title">Envios (Estoque Central)</h2>
+          <p class="report-card-description">
             Auditoria de saídas do estoque central para as escolas.
+          </p>
+        </div>
+      </a>
+
+      
+
+      <a
+        href="/relatorios/ajustes-prefeitura"
+        class="report-card"
+      >
+        <div class="report-card-icon bg-yellow-100 text-yellow-700">
+          <Warehouse class="w-6 h-6" />
+        </div>
+        <div>
+          <h2 class="report-card-title">Ajustes e Perdas (Central)</h2>
+          <p class="report-card-description">
+            Auditoria de perdas e ajustes manuais no estoque central.
           </p>
         </div>
       </a>
 
       <a
         href="/relatorios/ajustes-escolas"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 flex items-start gap-5"
+        class="report-card"
       >
-        <div class="flex-shrink-0 bg-red-100 text-red-600 p-3 rounded-full">
+        <div class="report-card-icon bg-red-100 text-red-600">
           <ArchiveX class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800">Ajustes e Perdas (Escolas)</h2>
-          <p class="text-sm text-gray-600 mt-1">
+          <h2 class="report-card-title">Ajustes e Perdas (Escolas)</h2>
+          <p class="report-card-description">
             Monitora perdas e ajustes manuais reportados pelas escolas.
           </p>
         </div>
       </a>
 
       <a
-        href="/relatorios/ajustes-prefeitura"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 flex items-start gap-5"
+        href="/relatorios/entradas-prefeitura"
+        class="report-card"
       >
-        <div class="flex-shrink-0 bg-yellow-100 text-yellow-700 p-3 rounded-full">
-          <Warehouse class="w-6 h-6" />
+        <div class="report-card-icon bg-cyan-100 text-cyan-600">
+          <PackagePlus class="w-6 h-6" />
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800">Ajustes e Perdas (Central)</h2>
-          <p class="text-sm text-gray-600 mt-1">
-            Auditoria de perdas e ajustes manuais no estoque central.
+          <h2 class="report-card-title">Entradas (Estoque Central)</h2>
+          <p class="report-card-description">
+            Auditoria de entradas por ajuste manual ou importação.
           </p>
         </div>
       </a>
     </div>
   </div>
-  </div>
+</div>
 
 <style>
   @keyframes fadeIn {
@@ -188,5 +199,41 @@
   }
   .animate-fadeIn {
     animation: fadeIn 0.25s ease-out;
+  }
+
+  /* Classes para simular o @apply, já que você não está usando ele */
+  .report-card {
+    background-color: white;
+    border-radius: 1rem; /* rounded-2xl */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+    border: 1px solid #e5e7eb; /* border-gray-100 */
+    padding: 1.5rem; /* p-6 */
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem; /* gap-5 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .report-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* shadow-xl */
+    transform: translateY(-0.25rem); /* -translate-y-1 */
+  }
+
+  .report-card-icon {
+    flex-shrink: 0;
+    padding: 0.75rem; /* p-3 */
+    border-radius: 9999px; /* rounded-full */
+  }
+
+  .report-card-title {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 700; /* font-bold */
+    color: #1f2937; /* text-gray-800 */
+  }
+
+  .report-card-description {
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* text-gray-600 */
+    margin-top: 0.25rem; /* mt-1 */
   }
 </style>

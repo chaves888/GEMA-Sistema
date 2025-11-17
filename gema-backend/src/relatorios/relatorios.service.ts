@@ -38,6 +38,15 @@ export interface RelatorioAjustePrefeituraRow {
   quantidadeTotal: number;
 }
 
+export interface RelatorioEntradaPrefeituraRow {
+  productId: string;
+  productName: string;
+  unit: string;
+  quantidadeAdicionada: number;
+  motivoObservacao: string | null;
+  userName: string; // Quem fez a adição
+}
+
 export interface RelatorioAjusteEscolaRow {
   escolaId: string;
   escolaName: string;
@@ -551,6 +560,71 @@ export class RelatoriosService {
     }
   }
 
-  // Adicione um logger para depuração (opcional, mas recomendado)
+  async gerarRelatorioEntradasPrefeitura(
+    dto: GerarRelatorioSolicitacoesDto,
+  ): Promise<RelatorioEntradaPrefeituraRow[]> {
+    const { startDate, endDate } = dto;
+
+    if (new Date(endDate) < new Date(startDate)) {
+      throw new BadRequestException('A data de fim não pode ser anterior à data de início.');
+    }
+
+    // 1. Busca as movimentações de ENTRADA no estoque da PREFEITURA
+    //    que foram feitas por AJUSTE (isso inclui importação por planilha)
+    const movimentacoes = await this.movimentacaoRepo.find({
+      where: {
+        contexto: 'prefeitura',
+        tipo: TipoMovimentacao.ENTRADA,
+        motivoCategoria: MotivoMovimentacao.AJUSTE, // Captura tanto ajuste manual quanto importação
+        createdAt: Between(new Date(startDate), new Date(endDate + ' 23:59:59')),
+      },
+      relations: ['product', 'user'], // Carrega o produto e o usuário que fez
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    // 3. Agrupa os resultados (soma as quantidades)
+    // Chave do mapa: "productId-observacao-userId"
+    const reportMap = new Map<string, RelatorioEntradaPrefeituraRow>();
+
+    for (const mov of movimentacoes) {
+      // Ignora movimentações sem produto ou usuário (dados órfãos)
+      if (!mov.product || !mov.user) {
+        continue;
+      }
+
+      const obs = mov.motivoObservacao || '';
+      const key = `${mov.product.id}-${obs}-${mov.user.id}`;
+
+      if (reportMap.has(key)) {
+        // Se já existe, apenas soma a quantidade
+        const row = reportMap.get(key)!;
+        row.quantidadeAdicionada += mov.quantidade;
+      } else {
+        // Se não existe, cria a nova linha
+        reportMap.set(key, {
+          productId: mov.product.id,
+          productName: mov.product.name,
+          unit: mov.product.unit,
+          quantidadeAdicionada: mov.quantidade,
+          motivoObservacao: mov.motivoObservacao,
+          userName: mov.user.name,
+        });
+      }
+    }
+
+    // 4. Converte o mapa em um array e ordena
+    const finalReport = Array.from(reportMap.values());
+    finalReport.sort((a, b) => {
+      if (a.productName !== b.productName) {
+        return a.productName.localeCompare(b.productName);
+      }
+      return a.userName.localeCompare(b.userName);
+    });
+
+    return finalReport;
+  }
+
   private readonly logger = new Logger(RelatoriosService.name);
 }

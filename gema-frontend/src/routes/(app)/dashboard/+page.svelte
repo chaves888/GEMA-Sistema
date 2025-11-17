@@ -697,11 +697,11 @@
 		transform: translateY(-1px);
 	}
 	.btn-primary {
-		background-color: #4f46e5;
+		background-color: #dc2626;
 		color: white;
 	}
 	.btn-primary:hover {
-		background-color: #4338ca;
+		background-color: #f50404;
 	}
 	.btn-secondary {
 		background-color: #f3f4f6;

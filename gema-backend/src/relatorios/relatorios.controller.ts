@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseGuards, Req, Get } from '@nestjs/common';
-import { RelatorioEnvioRow, RelatoriosService, RelatorioAjusteEscolaRow, RelatorioAjustePrefeituraRow, RelatorioSnapshot } from './relatorios.service';
+import { RelatorioEnvioRow, RelatoriosService, RelatorioAjusteEscolaRow, RelatorioAjustePrefeituraRow, RelatorioSnapshot, RelatorioEntradaPrefeituraRow } from './relatorios.service';
 import { GerarRelatorioSolicitacoesDto } from './dto/gerar-relatorio-solicitacoes.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -63,6 +63,13 @@ export class RelatoriosController {
     @Body() dto: GerarRelatorioSolicitacoesDto,
   ): Promise<RelatorioAjustePrefeituraRow[]> {
     return this.relatoriosService.gerarRelatorioAjustesPrefeitura(dto);
+  }
+
+  @Post('entradas-estoque-central')
+  gerarRelatorioEntradasPrefeitura(
+    @Body() dto: GerarRelatorioSolicitacoesDto,
+  ): Promise<RelatorioEntradaPrefeituraRow[]> {
+    return this.relatoriosService.gerarRelatorioEntradasPrefeitura(dto);
   }
 
   @Get('snapshot')
