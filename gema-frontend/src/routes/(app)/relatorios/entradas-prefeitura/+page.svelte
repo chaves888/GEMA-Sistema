@@ -48,7 +48,6 @@
     finally { isLoading = false; }
   }
 
-  // PDF e Excel (Funções mantidas, apenas ocultadas para brevidade, lógica igual)
   function getReportHeaders() { return [['Produto', 'Unid.', 'Qtd.', 'Obs.', 'Usuário']]; }
   function getReportBody() { 
     if (!reportData) return [];
@@ -56,48 +55,63 @@
   }
   async function handleDownloadPDF() {
      if (!reportData) return;
-     const doc = new jsPDF();
-     autoTable(doc, { head: getReportHeaders(), body: getReportBody() });
-     doc.save('relatorio_entradas.pdf');
+     try {
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text('Relatório de Entradas (Estoque Central)', 14, 20);
+        doc.setFontSize(10);
+        doc.text(`Período: ${startDate} a ${endDate}`, 14, 26);
+
+        autoTable(doc, { 
+            head: getReportHeaders(), 
+            body: getReportBody(),
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [13, 71, 161] }
+        });
+        doc.save(`relatorio_entradas_${startDate}_a_${endDate}.pdf`);
+     } catch (e) { console.error(e); toast.error('Erro ao gerar PDF'); }
   }
   async function handleDownloadExcel() {
     if (!reportData) return;
-    const ws = XLSX.utils.aoa_to_sheet([...getReportHeaders(), ...getReportBody()]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Entradas');
-    XLSX.writeFile(wb, 'relatorio_entradas.xlsx');
+    try {
+        const ws = XLSX.utils.aoa_to_sheet([...getReportHeaders(), ...getReportBody()]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Entradas');
+        XLSX.writeFile(wb, `relatorio_entradas_${startDate}_a_${endDate}.xlsx`);
+    } catch (e) { console.error(e); toast.error('Erro ao gerar Excel'); }
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6 space-y-6 animate-fadeIn transition-colors duration-300">
   <div class="mb-2">
-    <a href="/relatorios" class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-semibold transition-all group">
+    <a href="/relatorios" class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-semibold transition-all group">
       <ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Voltar
     </a>
   </div>
 
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <div>
       <h1 class="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
         Relatório de Entradas (Central)
       </h1>
-      <p class="text-gray-600 mt-1 text-sm">Auditoria de entradas por ajuste manual ou importação.</p>
+      <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">Auditoria de entradas por ajuste manual ou importação.</p>
     </div>
   </div>
 
-  <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+  <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row flex-wrap gap-4 items-end">
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="startDate" class="block text-sm font-medium text-gray-700">Data de Início</label>
+      <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Início</label>
       <div class="relative mt-1">
-        <input id="startDate" type="text" placeholder="dd/mm/aaaa" bind:value={startDate} use:initStartDate class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 sm:text-sm pr-10" />
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400" /></div>
+        <input id="startDate" type="text" placeholder="dd/mm/aaaa" bind:value={startDate} use:initStartDate class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 sm:text-sm pr-10 placeholder-gray-400 dark:placeholder-gray-400" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" /></div>
       </div>
     </div>
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="endDate" class="block text-sm font-medium text-gray-700">Data de Fim</label>
+      <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Fim</label>
       <div class="relative mt-1">
-        <input id="endDate" type="text" placeholder="dd/mm/aaaa" bind:value={endDate} use:initEndDate class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 sm:text-sm pr-10" />
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400" /></div>
+        <input id="endDate" type="text" placeholder="dd/mm/aaaa" bind:value={endDate} use:initEndDate class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 sm:text-sm pr-10 placeholder-gray-400 dark:placeholder-gray-400" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" /></div>
       </div>
     </div>
     <button on:click={handleGenerateReport} disabled={isLoading} class="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.04] active:scale-95 disabled:opacity-50">
@@ -106,8 +120,8 @@
   </div>
 
   {#if reportData}
-    <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-      <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row flex-wrap gap-3 justify-end">
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex flex-col sm:flex-row flex-wrap gap-3 justify-end">
         <button on:click={handleDownloadExcel} class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-sm w-full sm:w-auto">
           <FileSpreadsheet class="w-4 h-4" /> Baixar Excel
         </button>
@@ -117,24 +131,24 @@
       </div>
       
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Produto</th>
-              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Unid.</th>
-              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Qtd. Adicionada</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observação</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Usuário</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Produto</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Unid.</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Qtd. Adicionada</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Observação</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Usuário</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {#each reportData as row}
-              <tr class="hover:bg-gray-50/50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">{row.productName}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{row.unit}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold text-right">{row.quantidadeAdicionada}</td>
-                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={row.motivoObservacao || ''}>{row.motivoObservacao || 'Ajuste Manual'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{row.userName}</td>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-gray-200">{row.productName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{row.unit}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400 font-bold text-right">{row.quantidadeAdicionada}</td>
+                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate" title={row.motivoObservacao || ''}>{row.motivoObservacao || 'Ajuste Manual'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{row.userName}</td>
               </tr>
             {/each}
           </tbody>

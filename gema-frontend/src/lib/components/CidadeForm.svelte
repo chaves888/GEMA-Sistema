@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Loader2 } from 'lucide-svelte';
-    import { toast } from '$lib/toast';
+  import { toast } from '$lib/toast';
 
   export let cidade: {
       id?: string;
@@ -43,9 +43,9 @@
               if (data.erro) {
                   cepError = 'CEP não encontrado.';
                   if (!isEditing) {
-                     cidade.name = '';
-                     cidade.state = '';
-                     cidade.bairro = '';
+                      cidade.name = '';
+                      cidade.state = '';
+                      cidade.bairro = '';
                   }
               } else {
                   // Preenche os campos
@@ -91,36 +91,69 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-6">
-  <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 border-b pb-4">
-    {isEditing ? 'Editar Cidade' : 'Nova Cidade'}
-  </h2>
+<form on:submit|preventDefault={handleSubmit} class="flex flex-col h-full">
+  <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+    <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">
+      {isEditing ? 'Editar Cidade' : 'Nova Cidade'}
+    </h2>
+  </div>
 
-  <div class="space-y-5">
+  <div class="space-y-5 flex-1 overflow-y-auto pr-1">
     <div>
-        <label for="cep" class="block text-sm font-semibold text-gray-700 mb-1">CEP</label>
+        <label for="cep" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">CEP</label>
         <div class="relative">
-            <input type="text" id="cep" class="mt-1 w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition pr-10" placeholder="Digite 8 dígitos..." maxlength="9" bind:value={cidade.cep} required on:blur={fetchCepData} />
+            <input 
+              type="text" 
+              id="cep" 
+              class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition pr-10 placeholder-gray-400 dark:placeholder-gray-400" 
+              placeholder="Digite 8 dígitos..." 
+              maxlength="9" 
+              bind:value={cidade.cep} 
+              required 
+              on:blur={fetchCepData} 
+            />
             {#if isCepLoading}
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Loader2 class="w-5 h-5 text-gray-400 animate-spin" /></div>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <Loader2 class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-spin" />
+                </div>
             {/if}
         </div>
-        {#if cepError}<p class="mt-1 text-xs text-red-600">{cepError}</p>{/if}
+        {#if cepError}<p class="mt-1 text-xs text-red-600 dark:text-red-400">{cepError}</p>{/if}
     </div>
 
     <div>
-      <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Nome da Cidade</label>
-      <input type="text" id="name" class="mt-1 w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100" bind:value={cidade.name} required disabled={isCepLoading} />
+      <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Nome da Cidade</label>
+      <input 
+        type="text" 
+        id="name" 
+        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400" 
+        bind:value={cidade.name} 
+        required 
+        disabled={isCepLoading} 
+      />
     </div>
 
     <div>
-      <label for="bairro" class="block text-sm font-semibold text-gray-700 mb-1">Bairro</label>
-      <input type="text" id="bairro" class="mt-1 w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100" placeholder="Digite o bairro (se houver)" bind:value={cidade.bairro} disabled={isCepLoading} />
+      <label for="bairro" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Bairro</label>
+      <input 
+        type="text" 
+        id="bairro" 
+        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 placeholder-gray-400 dark:placeholder-gray-400" 
+        placeholder="Digite o bairro (se houver)" 
+        bind:value={cidade.bairro} 
+        disabled={isCepLoading} 
+      />
     </div>
     
     <div>
-      <label for="state" class="block text-sm font-semibold text-gray-700 mb-1">Estado (UF)</label>
-      <select id="state" class="mt-1 w-full rounded-lg border border-gray-300 bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100" bind:value={cidade.state} required disabled={isCepLoading}>
+      <label for="state" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Estado (UF)</label>
+      <select 
+        id="state" 
+        class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400" 
+        bind:value={cidade.state} 
+        required 
+        disabled={isCepLoading}
+      >
           <option value="" disabled>Selecione...</option>
           {#each estados as estado (estado.uf)}
               <option value={estado.uf}>{estado.uf} - {estado.nome}</option>
@@ -129,8 +162,20 @@
     </div>
   </div>
 
-  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 border-t pt-6">
-    <button type="button" on:click={() => dispatch('cancel')} class="w-full sm:w-auto bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm">Cancelar</button>
-    <button type="submit" class="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105 disabled:opacity-50" disabled={isCepLoading}>Salvar</button>
+  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+    <button 
+      type="button" 
+      on:click={() => dispatch('cancel')} 
+      class="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm"
+    >
+      Cancelar
+    </button>
+    <button 
+      type="submit" 
+      class="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition transform hover:scale-105 disabled:opacity-50" 
+      disabled={isCepLoading}
+    >
+      Salvar
+    </button>
   </div>
 </form>

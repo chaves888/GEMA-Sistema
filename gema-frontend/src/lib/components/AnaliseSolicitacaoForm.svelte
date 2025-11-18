@@ -97,50 +97,50 @@
 </script>
 
 <form on:submit|preventDefault={handleSalvarAnalise} class="flex flex-col h-full">
-  <div class="border-b pb-4 mb-4">
-    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Analisar Solicitação</h2>
-    <p class="text-sm text-gray-600 mt-2">
-      Escola: <span class="font-semibold">{solicitacao.school?.name || '(Escola Excluída)'}</span>
+  <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Analisar Solicitação</h2>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+      Escola: <span class="font-semibold text-gray-900 dark:text-gray-200">{solicitacao.school?.name || '(Escola Excluída)'}</span>
     </p>
-    <p class="text-sm text-gray-600">
+    <p class="text-sm text-gray-600 dark:text-gray-400">
       Data: {format(new Date(solicitacao.createdAt), 'dd/MM/yyyy')}
     </p>
     {#if solicitacao.justificativa}
-      <div class="text-sm text-gray-700 mt-3 bg-gray-50 p-3 border rounded-lg shadow-inner">
-        <span class="font-semibold block mb-1">Justificativa:</span>
+      <div class="text-sm text-gray-700 dark:text-gray-300 mt-3 bg-gray-50 dark:bg-gray-700/50 p-3 border border-gray-200 dark:border-gray-600 rounded-lg shadow-inner">
+        <span class="font-semibold block mb-1 text-gray-900 dark:text-gray-100">Justificativa:</span>
         <span class="italic">“{solicitacao.justificativa}”</span>
       </div>
     {/if}
   </div>
 
   <div class="flex-1 overflow-y-auto pr-1">
-    <h3 class="text-lg font-semibold text-gray-800 mb-3">Itens Solicitados</h3>
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Itens Solicitados</h3>
     {#if itemsAnalisados.length === 0 && itemsRemovidos.length === 0}
-      <p class="text-sm text-gray-500 italic">Esta solicitação não contém itens.</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 italic">Esta solicitação não contém itens.</p>
     {:else}
-      <div class="space-y-4 border rounded-lg p-4 bg-gray-50 shadow-inner">
+      <div class="space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50 shadow-inner">
         {#if itemsRemovidos.length > 0}
-          <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md text-sm mb-4">
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-3 rounded-md text-sm mb-4">
             <p class="font-semibold">Atenção: {itemsRemovidos.length} item(ns) desta solicitação foram removidos do sistema e não podem ser analisados.</p>
           </div>
         {/if}
 
-        <div class="divide-y divide-gray-200">
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
           {#each itemsAnalisados as item, index (item.itemId)}
             <div class="py-4 first:pt-0 last:pb-0 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
               
               <div class="sm:col-span-5 md:col-span-6">
-                <span class="font-semibold text-gray-800 block text-base">{item.productName}</span>
-                <span class="text-xs text-gray-500 uppercase tracking-wide">Unidade: {item.productUnit}</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200 block text-base">{item.productName}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Unidade: {item.productUnit}</span>
               </div>
 
-              <div class="flex justify-between sm:block sm:col-span-3 md:col-span-2 text-left sm:text-center bg-white sm:bg-transparent p-2 sm:p-0 rounded border sm:border-0">
-                <span class="text-xs font-semibold text-gray-500 sm:block mb-1">Solicitado</span>
-                <span class="font-bold text-gray-700 text-lg">{item.quantityRequested}</span>
+              <div class="flex justify-between sm:block sm:col-span-3 md:col-span-2 text-left sm:text-center bg-white dark:bg-gray-700 sm:bg-transparent p-2 sm:p-0 rounded border border-gray-200 dark:border-gray-600 sm:border-0">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 sm:block mb-1">Solicitado</span>
+                <span class="font-bold text-gray-700 dark:text-gray-300 text-lg">{item.quantityRequested}</span>
               </div>
 
               <div class="sm:col-span-4 md:col-span-4">
-                <label for={`approved-${index}`} class="block text-xs font-semibold text-gray-700 mb-1">
+                <label for={`approved-${index}`} class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Aprovado
                 </label>
                 <input
@@ -150,7 +150,7 @@
                   max={item.quantityRequested}
                   id={`approved-${index}`}
                   bind:value={item.quantityApproved}
-                  class="w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-3 py-2 transition text-center font-medium text-gray-900"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-3 py-2 transition text-center font-medium"
                   required
                 />
               </div>
@@ -162,24 +162,24 @@
     {/if}
 
     <div class="mt-6">
-      <label for="observacao" class="block text-sm font-semibold text-gray-700 mb-1">
+      <label for="observacao" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
         Observações da Prefeitura (Obrigatório se negar)
       </label>
       <textarea
         id="observacao"
         rows="3"
-        class="w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition placeholder-gray-400 dark:placeholder-gray-400"
         bind:value={observacaoPrefeitura}
         placeholder="Ex: Item X indisponível no momento, entrega parcial..."
       />
     </div>
   </div>
 
-  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-between items-center gap-4 border-t pt-6">
+  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-between items-center gap-4 border-t border-gray-200 dark:border-gray-700 pt-6">
     <button
       type="button"
       on:click={() => dispatch('cancel')}
-      class="w-full sm:w-auto bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm"
+      class="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm"
     >
       Cancelar
     </button>
@@ -188,7 +188,7 @@
       <button
         type="button"
         on:click={handleNegar}
-        class="w-full sm:w-auto bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 font-bold py-2.5 px-6 rounded-lg shadow-sm transition disabled:opacity-50"
+        class="w-full sm:w-auto bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 font-bold py-2.5 px-6 rounded-lg shadow-sm transition disabled:opacity-50"
         disabled={itemsAnalisados.length === 0}
       >
         Negar Solicitação

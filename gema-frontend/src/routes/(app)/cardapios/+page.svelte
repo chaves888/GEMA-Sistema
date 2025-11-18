@@ -6,7 +6,7 @@
   import { ptBR } from 'date-fns/locale';
   import Modal from '$lib/components/Modal.svelte';
   import CardapioForm from '$lib/components/CardapioForm.svelte';
-  import { CalendarPlus, Edit, Eye, Trash2, CalendarDays } from 'lucide-svelte';
+  import { CalendarPlus, Edit, Eye, Trash2, CalendarDays, Search } from 'lucide-svelte';
   import { goto } from '$app/navigation';
 
   import { toast } from '$lib/toast';
@@ -25,6 +25,23 @@
   let isLoading = true;
   let error: string | null = null;
   let isActionLoading = false;
+  let dataLoaded = false;
+
+  let filterSearchTerm = '';
+  let filterStatus = '';
+
+  $: filteredCardapios = cardapios.filter((cardapio) => {
+    const statusMatch = filterStatus === '' || cardapio.status === filterStatus;
+    if (!statusMatch) return false;
+
+    const term = filterSearchTerm.toLowerCase().trim();
+    if (term === '') return true;
+
+    const nameMatch = cardapio.name.toLowerCase().includes(term);
+    const creatorMatch = (cardapio.createdBy?.name || '').toLowerCase().includes(term);
+
+    return nameMatch || creatorMatch;
+  });
 
   let showCreateModal = false;
   let newCardapioData = {
@@ -35,9 +52,6 @@
   let showConfirmModal = false;
   let cardapioToDelete: CardapioListItem | null = null;
   let confirmMessage = '';
-
-  // Variável para controlar o carregamento inicial e evitar loop
-  let dataLoaded = false;
 
   $: if ($session && !dataLoaded) {
     dataLoaded = true;
@@ -52,7 +66,6 @@
     } catch (e: any) {
       error = e?.message || 'Não foi possível carregar os cardápios.';
       console.error(e);
-
       if (error) {
         toast.error(error);
       }
@@ -181,9 +194,9 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6 space-y-6 animate-fadeIn transition-colors duration-300">
   <div
-    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border"
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
   >
     <div>
       <h1
@@ -192,9 +205,9 @@
         Cardápios Semanais
       </h1>
       {#if $session?.profile === 'nutricionista'}
-        <p class="text-gray-600 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p>
+        <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">Crie, gerencie e distribua os cardápios da escola.</p>
       {:else}
-        <p class="text-gray-600 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p>
+        <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">Consulte os cardápios disponíveis desta semana.</p>
       {/if}
     </div>
     {#if $session?.profile === 'nutricionista'}
@@ -208,52 +221,93 @@
     {/if}
   </div>
 
+  <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row flex-wrap gap-4">
+    
+    <div class="flex-1 min-w-[250px]">
+      <label for="filterSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Buscar (Nome, Criador)</label>
+      <div class="relative mt-1">
+        <input
+          type="text"
+          id="filterSearch"
+          bind:value={filterSearchTerm}
+          placeholder="Digite o nome do cardápio ou criador..."
+          class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pl-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
+        />
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search class="w-5 h-5 text-gray-400 dark:text-gray-500" />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 min-w-[150px]">
+      <label for="filterStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+      <select
+        id="filterStatus"
+        bind:value={filterStatus}
+        class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+      >
+        <option value="">Todos os Status</option>
+        <option value="rascunho">Rascunho</option>
+        <option value="publicado">Publicado</option>
+      </select>
+    </div>
+  </div>
+
   {#if isLoading}
     <div class="flex justify-center items-center p-10">
-      <p class="text-gray-500 text-lg animate-pulse">⏳ Carregando...</p>
+      <p class="text-gray-500 dark:text-gray-400 text-lg animate-pulse">⏳ Carregando...</p>
     </div>
   {:else if error && cardapios.length === 0}
-    <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg shadow-sm text-center font-medium">
+    <div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
       {error}
     </div>
   {:else if cardapios.length === 0}
     <div
-      class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"
+      class="text-center p-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-700"
     >
-      <p class="text-gray-600 font-semibold text-lg">Nenhum cardápio.</p>
+      <p class="text-gray-600 dark:text-gray-300 font-semibold text-lg">Nenhum cardápio.</p>
       {#if $session?.profile === 'nutricionista'}
-        <p class="text-sm text-gray-400 mt-2">Clique em “Novo Cardápio” para começar.</p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Clique em “Novo Cardápio” para começar.</p>
+      {:else}
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Aguardando envio.</p>
       {/if}
+    </div>
+  {:else if filteredCardapios.length === 0}
+    <div
+      class="text-center p-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-700"
+    >
+      <p class="text-gray-600 dark:text-gray-300 font-semibold text-lg">Nenhum resultado encontrado.</p>
+      <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Tente ajustar sua busca.</p>
     </div>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      {#each cardapios as cardapio (cardapio.id)}
+      {#each filteredCardapios as cardapio (cardapio.id)}
         {@const weekdays = getWeekdays(cardapio.startDate, cardapio.endDate)}
         <div
-          class="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
         >
-          <div class="p-5 border-b border-gray-100">
+          <div class="p-5 border-b border-gray-100 dark:border-gray-700">
             <span
               class="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold shadow-sm {cardapio.status ===
               'publicado'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'}"
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200'
+                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200'}"
             >
               {cardapio.status === 'publicado' ? 'Publicado' : 'Rascunho'}
             </span>
 
-            <h3 class="text-2xl font-bold text-gray-800 break-words leading-tight" title={cardapio.name}>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white break-words leading-tight" title={cardapio.name}>
               {cardapio.name}
             </h3>
 
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Criado por {cardapio.createdBy?.name || '(Usuário Excluído)'}
             </p>
           </div>
 
           <div class="p-5 flex-1">
             <span
-              class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2"
+              class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-2"
             >
               <CalendarDays class="w-4 h-4" /> Dias Inclusos
             </span>
@@ -261,25 +315,25 @@
               {#if weekdays.length > 0}
                 {#each weekdays as dia}
                   <span
-                    class="px-3 py-1 bg-primary-50 text-primary-700 text-sm font-semibold rounded-full"
+                    class="px-3 py-1 bg-primary-50 text-primary-700 text-sm font-semibold rounded-full dark:bg-primary-900/50 dark:text-primary-300"
                   >
                     {dia}
                   </span>
                 {/each}
               {:else}
-                <span class="text-sm text-gray-400 italic">(Nenhum dia útil no período)</span>
+                <span class="text-sm text-gray-400 dark:text-gray-500 italic">(Nenhum dia útil no período)</span>
               {/if}
             </div>
           </div>
 
           <div
-            class="bg-gray-50 p-4 rounded-b-2xl border-t mt-auto flex justify-end items-center gap-3"
+            class="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-b-2xl border-t border-gray-100 dark:border-gray-700 mt-auto flex justify-end items-center gap-3"
           >
             {#if $session?.profile === 'nutricionista'}
               <button
                 on:click={() => handleViewEdit(cardapio.id)}
                 disabled={isActionLoading}
-                class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200"
+                class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:hover:bg-primary-800"
               >
                 <Edit class="w-4 h-4" />
                 {cardapio.status === 'rascunho' ? 'Gerenciar' : 'Visualizar'}
@@ -288,7 +342,7 @@
               <button
                 on:click={() => openConfirmDeleteModal(cardapio)}
                 disabled={isActionLoading}
-                class="action-btn text-red-600 bg-red-100 hover:bg-red-200"
+                class="action-btn text-red-600 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
               >
                 <Trash2 class="w-4 h-4" />
               </button>
@@ -296,7 +350,7 @@
               <button
                 on:click={() => handleViewEdit(cardapio.id)}
                 disabled={isActionLoading}
-                class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200"
+                class="action-btn text-primary-600 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:hover:bg-primary-800"
               >
                 <Eye class="w-4 h-4" /> Visualizar
               </button>

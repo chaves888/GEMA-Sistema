@@ -7,13 +7,15 @@
     import GemaLogo from '$lib/assets/logo-gema.png';
     import Notifications from '$lib/components/Notifications.svelte';
     import { browser } from '$app/environment';
+    // --- 1. IMPORTAR STORE E ÍCONES ---
+    import { theme, toggleTheme } from '$lib/themeStore';
     import {
         LayoutDashboard, Users, Building2, School, Package, Boxes,
         LogOut, ClipboardList, BookOpen, FileText, User as UserIcon,
-        Menu, X // Ícones novos
+        Menu, X, Sun, Moon // Ícones Sun e Moon adicionados
     } from 'lucide-svelte';
 
-    let isMobileMenuOpen = false; // Controle do menu mobile
+    let isMobileMenuOpen = false;
 
     onMount(() => {
         initializeSession();
@@ -34,7 +36,6 @@
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
-    // Fecha o menu ao navegar
     $: { if ($page.url.pathname) isMobileMenuOpen = false; }
 
     $: pathname = $page.url.pathname;
@@ -48,6 +49,7 @@
     $: activeSolicitacoes = pathname.startsWith('/solicitacoes');
     $: activeRelatorios = pathname.startsWith('/relatorios');
 
+    const sidebarBg = 'bg-primary-900';
     const activeStyle = 'bg-white/10 text-white font-semibold shadow-sm rounded-lg border-l-4 border-accent-500';
     const inactiveStyle = 'text-gray-300 hover:bg-white/5 hover:text-white rounded-lg transition-all';
 
@@ -66,9 +68,9 @@
     }
 </script>
 
-<div class="flex h-screen bg-gray-50 overflow-hidden font-sans relative">
+<!-- --- 2. ADICIONAR CLASSES DARK NO CONTAINER PRINCIPAL --- -->
+<div class="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden font-sans relative transition-colors duration-300">
     
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
     {#if isMobileMenuOpen}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -107,17 +109,17 @@
                     </a>
                 {/if}
 
-                {#if $session.profile === 'prefeitura' || $session.profile === 'nutricionista' || $session.profile === 'escola'}
-                    <a href="/produtos" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeProdutos ? activeStyle : inactiveStyle}">
-                        <Package class="w-5 h-5" /> <span>Produtos</span>
-                    </a>
-                {/if}
-
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Gestão</p>
                 
                 <a href="/cardapios" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeCardapios ? activeStyle : inactiveStyle}">
                     <BookOpen class="w-5 h-5" /> <span>Cardápios</span>
                 </a>
+
+                {#if $session.profile === 'prefeitura' || $session.profile === 'nutricionista' || $session.profile === 'escola'}
+                    <a href="/produtos" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeProdutos ? activeStyle : inactiveStyle}">
+                        <Package class="w-5 h-5" /> <span>Produtos</span>
+                    </a>
+                {/if}
 
                 {#if $session.profile === 'prefeitura' || $session.profile === 'escola' || $session.profile === 'cozinheira'}
                     <a href="/estoque" class="flex items-center gap-3 px-3 py-2.5 text-sm {activeEstoque ? activeStyle : inactiveStyle}">
@@ -146,25 +148,45 @@
             </nav>
 
             <div class="border-t border-white/10 bg-black/20">
+                
                 <div class="px-4 pt-4 pb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-full bg-accent-500 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-white/10 flex-shrink-0">
-                            {getInitials($session.name)}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-white truncate leading-tight">
-                                {$session.name || 'Usuário'}
-                            </p>
-                            <p class="text-xs text-gray-400 truncate">
-                                {$session.email}
-                            </p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="inline-flex items-center rounded-md bg-primary-950/50 px-1.5 py-0.5 text-[10px] font-medium text-accent-200 ring-1 ring-inset ring-accent-500/20 capitalize">
-                                    {$session.profile?.replace('_', ' ')}
-                                </span>
+                    <!-- --- 3. ADICIONAR BOTÃO DE TEMA AO LADO DO PERFIL --- -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="h-10 w-10 rounded-full bg-accent-500 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-white/10 flex-shrink-0">
+                                {getInitials($session.name)}
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-white truncate leading-tight">
+                                    {$session.name || 'Usuário'}
+                                </p>
+                                <p class="text-xs text-gray-400 truncate">
+                                    {$session.email}
+                                </p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="inline-flex items-center rounded-md bg-primary-950/50 px-1.5 py-0.5 text-[10px] font-medium text-accent-200 ring-1 ring-inset ring-accent-500/20 capitalize">
+                                        {$session.profile?.replace('_', ' ')}
+                                    </span>
+                                </div>
                             </div>
                         </div>
+                        
+                        <!-- Botão de Troca de Tema -->
+                        <button 
+                            on:click={toggleTheme} 
+                            class="ml-2 p-2 rounded-full hover:bg-white/10 transition-colors text-gray-300 hover:text-white"
+                            title={$theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+                        >
+                            {#if $theme === 'dark'}
+                                <Sun class="w-5 h-5" />
+                            {:else}
+                                <Moon class="w-5 h-5" />
+                            {/if}
+                        </button>
                     </div>
+                    <!-- --- FIM DA ADIÇÃO --- -->
+
                     {#if ($session.profile === 'escola' || $session.profile === 'cozinheira') && $session.school}
                         <div class="mt-2 flex items-center gap-2 text-xs text-gray-300 bg-white/5 p-1.5 rounded-md">
                             <School class="w-3 h-3 text-accent-400 flex-shrink-0" />
@@ -172,28 +194,32 @@
                         </div>
                     {/if}
                 </div>
+
                 <div class="px-4 pb-4">
                     <button
                         on:click={handleLogout}
-                        class="w-full flex items-center justify-center gap-2 bg-red-600/90 hover:bg-red-600 text-white font-medium py-2 rounded-lg shadow-md transition-all active:scale-95 text-sm"
+                        class="w-full flex items-center justify-center gap-2 bg-red-600/90 hover:bg-red-600 text-white font-medium py-2.5 rounded-lg shadow-md transition-all active:scale-95 text-sm"
                     >
-                        <LogOut class="w-4 h-4" /> Sair
+                        <LogOut class="w-4 h-4" /> Sair do Sistema
                     </button>
                 </div>
+
             </div>
         {/if}
     </aside>
 
     <div class="flex-1 flex flex-col overflow-hidden w-full">
-        <header class="lg:hidden h-16 bg-white border-b border-gray-200 flex items-center px-4 justify-between flex-shrink-0">
-            <button class="text-gray-600" on:click={() => isMobileMenuOpen = true}>
+        <!-- Header Mobile com suporte a Dark Mode -->
+        <header class="lg:hidden h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 justify-between flex-shrink-0 transition-colors duration-300">
+            <button class="text-gray-600 dark:text-gray-200" on:click={() => isMobileMenuOpen = true}>
                 <Menu class="w-6 h-6" />
             </button>
-            <span class="font-bold text-primary-800 text-lg">GEMA</span>
+            <span class="font-bold text-primary-800 dark:text-primary-400 text-lg">GEMA</span>
             <div class="w-6"></div>
         </header>
 
-        <main class="flex-1 p-4 lg:p-6 overflow-y-auto bg-gray-50 scroll-smooth">
+        <!-- Área Principal com suporte a Dark Mode -->
+        <main class="flex-1 p-4 lg:p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900 scroll-smooth transition-colors duration-300">
             <slot />
         </main>
     </div>

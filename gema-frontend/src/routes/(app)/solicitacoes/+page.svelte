@@ -71,7 +71,7 @@
   const flatpickrOptions = {
     dateFormat: 'Y-m-d',
     locale: Portuguese,
-    disableMobile: true // CORREÇÃO: deve ser booleano (sem aspas)
+    disableMobile: true
   };
 
   function initStartDate(node: HTMLInputElement) {
@@ -111,14 +111,14 @@
   // --- HELPERS ---
   function getStatusClass(status: string): string {
     switch (status) {
-      case 'pendente': return 'bg-yellow-100 text-yellow-800';
-      case 'aprovado': return 'bg-green-100 text-green-800';
-      case 'aprovado_parcialmente': return 'bg-blue-100 text-blue-800';
-      case 'negado': return 'bg-red-100 text-red-800';
-      case 'recebido': return 'bg-gray-200 text-gray-800 font-medium';
-      case 'recebido_divergente': return 'bg-orange-100 text-orange-800 font-medium';
-      case 'cancelado': return 'bg-gray-400 text-white font-medium';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pendente': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'aprovado': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'aprovado_parcialmente': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'negado': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'recebido': return 'bg-gray-200 text-gray-800 font-medium dark:bg-gray-700 dark:text-gray-300';
+      case 'recebido_divergente': return 'bg-orange-100 text-orange-800 font-medium dark:bg-orange-900/30 dark:text-orange-300';
+      case 'cancelado': return 'bg-gray-400 text-white font-medium dark:bg-gray-600 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   }
   function formatStatus(status: string): string {
@@ -213,16 +213,18 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6 space-y-6 animate-fadeIn transition-colors duration-300">
+  
+  <!-- Cabeçalho -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
     <div>
       <h1 class="text-2xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
         Solicitações de Produtos
       </h1>
       {#if $session?.profile === 'escola'}
-        <p class="text-gray-600 mt-1 text-sm">Crie e acompanhe os pedidos de reposição.</p>
+        <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">Crie e acompanhe os pedidos de reposição.</p>
       {:else if $session?.profile === 'prefeitura'}
-        <p class="text-gray-600 mt-1 text-sm">Gerencie as solicitações recebidas.</p>
+        <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">Gerencie as solicitações recebidas.</p>
       {/if}
     </div>
     {#if $session?.profile === 'escola'}
@@ -232,11 +234,12 @@
     {/if}
   </div>
 
-  <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4">
+  <!-- Filtros -->
+  <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row flex-wrap gap-4">
     
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="filterStatus" class="block text-sm font-medium text-gray-700"> Status </label>
-      <select id="filterStatus" bind:value={filterStatus} class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+      <label for="filterStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Status </label>
+      <select id="filterStatus" bind:value={filterStatus} class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
         <option value="">Todos os Status</option>
         <option value="pendente">Pendente</option>
         <option value="aprovado">Aprovado</option>
@@ -247,74 +250,74 @@
 
     {#if $session?.profile === 'prefeitura'}
       <div class="flex-1 w-full md:min-w-[200px]">
-        <label for="filterSearch" class="block text-sm font-medium text-gray-700">Buscar por Escola</label>
+        <label for="filterSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Buscar por Escola</label>
         <div class="relative mt-1">
-          <input type="text" id="filterSearch" bind:value={filterSearchTerm} placeholder="Nome da escola..." class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pl-10" />
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search class="w-5 h-5 text-gray-400" /></div>
+          <input type="text" id="filterSearch" bind:value={filterSearchTerm} placeholder="Nome da escola..." class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pl-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400" />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search class="w-5 h-5 text-gray-400 dark:text-gray-500" /></div>
         </div>
       </div>
     {/if}
 
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="filterDateStart" class="block text-sm font-medium text-gray-700">Data Inicial</label>
+      <label for="filterDateStart" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data Inicial</label>
       <div class="relative mt-1">
-        <input type="text" id="filterDateStart" placeholder="dd/mm/aaaa" bind:value={filterDateStart} use:initStartDate class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white" />
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400" /></div>
+        <input type="text" id="filterDateStart" placeholder="dd/mm/aaaa" bind:value={filterDateStart} use:initStartDate class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" /></div>
       </div>
     </div>
 
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="filterDateEnd" class="block text-sm font-medium text-gray-700">Data Final</label>
+      <label for="filterDateEnd" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data Final</label>
       <div class="relative mt-1">
-        <input type="text" id="filterDateEnd" placeholder="dd/mm/aaaa" bind:value={filterDateEnd} use:initEndDate class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white" />
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400" /></div>
+        <input type="text" id="filterDateEnd" placeholder="dd/mm/aaaa" bind:value={filterDateEnd} use:initEndDate class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"><Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" /></div>
       </div>
     </div>
   </div>
 
   {#if isLoading}
-    <div class="flex justify-center items-center p-10"><p class="text-gray-500 text-lg animate-pulse">⏳ Carregando...</p></div>
+    <div class="flex justify-center items-center p-10"><p class="text-gray-500 dark:text-gray-400 text-lg animate-pulse">⏳ Carregando...</p></div>
   {:else if filteredSolicitacoes.length === 0}
-    <div class="text-center p-10 bg-white rounded-xl shadow-sm border border-dashed border-gray-300"><p class="text-gray-600 font-semibold text-lg">Nenhum resultado encontrado.</p></div>
+    <div class="text-center p-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-700"><p class="text-gray-600 dark:text-gray-300 font-semibold text-lg">Nenhum resultado encontrado.</p></div>
   {:else}
-    <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Data</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Data</th>
               {#if $session?.profile === 'prefeitura'}
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Escola</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Escola</th>
               {/if}
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Itens</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Itens</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {#each filteredSolicitacoes as s (s.id)}
-              <tr class="hover:bg-gray-50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{format(new Date(s.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</td>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{format(new Date(s.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</td>
                 {#if $session?.profile === 'prefeitura'}
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{s.school?.name || '(Escola Excluída)'}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{s.school?.name || '(Escola Excluída)'}</td>
                 {/if}
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{s.items.length}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{s.items.length}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full {getStatusClass(s.status)}">{formatStatus(s.status)}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                   {#if $session?.profile === 'prefeitura' && s.status === 'pendente'}
-                    <button on:click={() => handleAnalisar(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors">Analisar</button>
+                    <button on:click={() => handleAnalisar(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors">Analisar</button>
                   {/if}
                   {#if $session?.profile === 'escola'}
                     {#if s.status === 'aprovado' || s.status === 'aprovado_parcialmente'}
-                      <button on:click={() => handleConfirmar(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-green-100 text-green-700 hover:bg-green-200 transition-colors">Confirmar</button>
+                      <button on:click={() => handleConfirmar(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 transition-colors">Confirmar</button>
                     {/if}
                     {#if s.status === 'pendente'}
-                      <button on:click={() => handleCancelar(s)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-red-100 text-red-700 hover:bg-red-200 transition-colors">Cancelar</button>
+                      <button on:click={() => handleCancelar(s)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors">Cancelar</button>
                     {/if}
                   {/if}
-                  <button on:click={() => handleVerDetalhes(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">Ver Detalhes</button>
+                  <button on:click={() => handleVerDetalhes(s.id)} disabled={isActionLoading} class="px-3 py-1 rounded-full font-semibold text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Ver Detalhes</button>
                 </td>
               </tr>
             {/each}
@@ -325,11 +328,47 @@
   {/if}
 </div>
 
-{#if showCreateModal} <Modal show={showCreateModal} on:close={() => (showCreateModal = false)} size="max-w-3xl"> <SolicitacaoForm bind:justificativa={newSolicitacaoJustificativa} bind:items={newSolicitacaoItems} on:save={handleSaveNewSolicitacao} on:cancel={() => (showCreateModal = false)} /> </Modal> {/if}
-{#if solicitacaoToAnalyze} <Modal show={showAnalyzeModal} on:close={() => { (showAnalyzeModal = false), (solicitacaoToAnalyze = null); }} size="max-w-3xl"> <AnaliseSolicitacaoForm solicitacao={solicitacaoToAnalyze} on:save={handleSaveAnalysis} on:cancel={() => { (showAnalyzeModal = false), (solicitacaoToAnalyze = null); }} /> </Modal> {/if}
-{#if solicitacaoToConfirm} <Modal show={showConfirmModal} on:close={() => { (showConfirmModal = false), (solicitacaoToConfirm = null); }} size="max-w-3xl"> <ConfirmRecebimentoForm solicitacao={solicitacaoToConfirm} on:save={handleSaveConfirmation} on:cancel={() => { (showConfirmModal = false), (solicitacaoToConfirm = null); }} /> </Modal> {/if}
-{#if solicitacaoToView} <Modal show={showDetailsModal} on:close={() => { (showDetailsModal = false), (solicitacaoToView = null); }} size="max-w-4xl"> <DetalhesSolicitacao solicitacao={solicitacaoToView} on:close={() => { (showDetailsModal = false), (solicitacaoToView = null); }} /> </Modal> {/if}
-{#if solicitacaoToCancel} <Modal show={showCancelModal} on:close={() => { (showCancelModal = false), (solicitacaoToCancel = null); }} size="max-w-lg"> <div class="space-y-6"> <h2 class="text-3xl font-bold text-gray-800">Cancelar Solicitação</h2> <p class="text-gray-600"> Tem certeza que deseja cancelar esta solicitação? </p> <div> <label for="motivoCancelamento" class="block text-sm font-semibold text-gray-700 mb-1" >Motivo (Opcional)</label > <textarea id="motivoCancelamento" rows="3" class="mt-1 w-full rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition" bind:value={motivoCancelamento} /> </div> <div class="mt-8 flex justify-end space-x-4 border-t pt-6"> <button type="button" on:click={() => { (showCancelModal = false), (solicitacaoToCancel = null); }} class="bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm" disabled={isActionLoading} > Voltar </button> <button type="button" on:click={handleSaveCancelamento} class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition disabled:opacity-50" disabled={isActionLoading} > {isActionLoading ? 'Cancelando...' : 'Confirmar Cancelamento'} </button> </div> </div> </Modal> {/if}
+<!-- MODAIS -->
+{#if showCreateModal} 
+  <Modal show={showCreateModal} on:close={() => (showCreateModal = false)} size="max-w-3xl"> 
+    <SolicitacaoForm bind:justificativa={newSolicitacaoJustificativa} bind:items={newSolicitacaoItems} on:save={handleSaveNewSolicitacao} on:cancel={() => (showCreateModal = false)} /> 
+  </Modal> 
+{/if}
+
+{#if solicitacaoToAnalyze} 
+  <Modal show={showAnalyzeModal} on:close={() => { (showAnalyzeModal = false), (solicitacaoToAnalyze = null); }} size="max-w-3xl"> 
+    <AnaliseSolicitacaoForm solicitacao={solicitacaoToAnalyze} on:save={handleSaveAnalysis} on:cancel={() => { (showAnalyzeModal = false), (solicitacaoToAnalyze = null); }} /> 
+  </Modal> 
+{/if}
+
+{#if solicitacaoToConfirm} 
+  <Modal show={showConfirmModal} on:close={() => { (showConfirmModal = false), (solicitacaoToConfirm = null); }} size="max-w-3xl"> 
+    <ConfirmRecebimentoForm solicitacao={solicitacaoToConfirm} on:save={handleSaveConfirmation} on:cancel={() => { (showConfirmModal = false), (solicitacaoToConfirm = null); }} /> 
+  </Modal> 
+{/if}
+
+{#if solicitacaoToView} 
+  <Modal show={showDetailsModal} on:close={() => { (showDetailsModal = false), (solicitacaoToView = null); }} size="max-w-4xl"> 
+    <DetalhesSolicitacao solicitacao={solicitacaoToView} on:close={() => { (showDetailsModal = false), (solicitacaoToView = null); }} /> 
+  </Modal> 
+{/if}
+
+{#if solicitacaoToCancel} 
+  <Modal show={showCancelModal} on:close={() => { (showCancelModal = false), (solicitacaoToCancel = null); }} size="max-w-lg"> 
+    <div class="space-y-6"> 
+      <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Cancelar Solicitação</h2> 
+      <p class="text-gray-600 dark:text-gray-400"> Tem certeza que deseja cancelar esta solicitação? </p> 
+      <div> 
+        <label for="motivoCancelamento" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" >Motivo (Opcional)</label > 
+        <textarea id="motivoCancelamento" rows="3" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400 shadow-sm px-4 py-2 transition placeholder-gray-400 dark:placeholder-gray-400" bind:value={motivoCancelamento} /> 
+      </div> 
+      <div class="mt-8 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6"> 
+        <button type="button" on:click={() => { (showCancelModal = false), (solicitacaoToCancel = null); }} class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm" disabled={isActionLoading} > Voltar </button> 
+        <button type="button" on:click={handleSaveCancelamento} class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition disabled:opacity-50" disabled={isActionLoading} > {isActionLoading ? 'Cancelando...' : 'Confirmar Cancelamento'} </button> 
+      </div> 
+    </div> 
+  </Modal> 
+{/if}
 
 <style>
   /* CSS GLOBAL: Esconde o ícone nativo de calendário do navegador (Webkit/Chrome/Edge) */

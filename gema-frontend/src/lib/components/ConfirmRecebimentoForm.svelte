@@ -63,52 +63,52 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="flex flex-col h-full">
-  <div class="border-b pb-4 mb-4">
-    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Confirmar Recebimento</h2>
-    <p class="text-sm text-gray-600 mt-2">
-      Escola: <span class="font-semibold">{solicitacao.school?.name || '(Escola Excluída)'}</span>
+  <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Confirmar Recebimento</h2>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+      Escola: <span class="font-semibold text-gray-900 dark:text-gray-200">{solicitacao.school?.name || '(Escola Excluída)'}</span>
     </p>
-    <p class="text-sm text-gray-600">
+    <p class="text-sm text-gray-600 dark:text-gray-400">
       Data da Solicitação: {format(new Date(solicitacao.createdAt), 'dd/MM/yyyy')}
     </p>
     {#if solicitacao.observacaoPrefeitura}
-      <div class="text-sm text-gray-700 mt-3 bg-blue-50 p-3 border border-blue-200 rounded-lg shadow-inner">
-        <span class="font-semibold text-blue-800 block mb-1">Observação da Prefeitura:</span>
-        <span class="italic text-blue-700">“{solicitacao.observacaoPrefeitura}”</span>
+      <div class="text-sm text-gray-700 dark:text-gray-300 mt-3 bg-blue-50 dark:bg-blue-900/20 p-3 border border-blue-200 dark:border-blue-800 rounded-lg shadow-inner">
+        <span class="font-semibold text-blue-800 dark:text-blue-300 block mb-1">Observação da Prefeitura:</span>
+        <span class="italic text-blue-700 dark:text-blue-200">“{solicitacao.observacaoPrefeitura}”</span>
       </div>
     {/if}
   </div>
 
   <div class="flex-1 overflow-y-auto pr-1">
-    <h3 class="text-lg font-semibold text-gray-800 mb-3">Itens Aprovados</h3>
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Itens Aprovados</h3>
     {#if itemsParaConfirmar.length === 0 && itemsRemovidos.length === 0}
-      <p class="text-gray-500 text-sm italic">
+      <p class="text-gray-500 dark:text-gray-400 text-sm italic">
         Nenhum item foi aprovado com quantidade maior que zero.
       </p>
     {:else}
-      <div class="space-y-4 border rounded-lg p-4 bg-gray-50 shadow-inner">
+      <div class="space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50 shadow-inner">
         {#if itemsRemovidos.length > 0}
-          <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md text-sm mb-4">
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-3 rounded-md text-sm mb-4">
             <p class="font-semibold">Atenção: {itemsRemovidos.length} item(ns) aprovados nesta solicitação foram removidos do sistema e não podem ser recebidos.</p>
           </div>
         {/if}
 
-        <div class="divide-y divide-gray-200">
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
           {#each itemsParaConfirmar as item, index (item.itemId)}
             <div class="py-4 first:pt-0 last:pb-0 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
               
               <div class="sm:col-span-5 md:col-span-6">
-                <span class="font-semibold text-gray-800 block text-base">{item.productName}</span>
-                <span class="text-xs text-gray-500 uppercase tracking-wide">Unidade: {item.productUnit}</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200 block text-base">{item.productName}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Unidade: {item.productUnit}</span>
               </div>
 
-              <div class="flex justify-between sm:block sm:col-span-3 md:col-span-2 text-left sm:text-center bg-white sm:bg-transparent p-2 sm:p-0 rounded border sm:border-0">
-                <span class="text-xs font-semibold text-gray-500 sm:block mb-1">Aprovado</span>
-                <span class="font-bold text-gray-700 text-lg">{item.quantityApproved}</span>
+              <div class="flex justify-between sm:block sm:col-span-3 md:col-span-2 text-left sm:text-center bg-white dark:bg-gray-700 sm:bg-transparent p-2 sm:p-0 rounded border border-gray-200 dark:border-gray-600 sm:border-0">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 sm:block mb-1">Aprovado</span>
+                <span class="font-bold text-gray-700 dark:text-gray-300 text-lg">{item.quantityApproved}</span>
               </div>
 
               <div class="sm:col-span-4 md:col-span-4">
-                <label for={`received-${index}`} class="block text-xs font-semibold text-gray-700 mb-1">
+                <label for={`received-${index}`} class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Recebido
                 </label>
                 <input
@@ -118,7 +118,7 @@
                   max={item.quantityApproved}
                   id={`received-${index}`}
                   bind:value={item.quantityReceived}
-                  class="w-full rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-400 shadow-sm px-3 py-2 transition text-center font-medium text-gray-900"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-400 shadow-sm px-3 py-2 transition text-center font-medium"
                   required
                 />
               </div>
@@ -129,7 +129,7 @@
       </div>
     {/if}
 
-    <div class="space-y-4 border-t pt-5 mt-5">
+    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-5 mt-5">
       <div class="flex items-start">
         <div class="flex h-5 items-center">
           <input
@@ -137,13 +137,13 @@
             type="checkbox"
             bind:checked={comDivergencia}
             disabled={hasQuantityDivergence}
-            class="h-5 w-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-70 disabled:cursor-not-allowed"
+            class="h-5 w-5 text-primary-600 dark:text-primary-500 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:focus:ring-primary-400 dark:bg-gray-700 disabled:opacity-70 disabled:cursor-not-allowed"
           />
         </div>
         <div class="ml-3 text-sm">
-          <label for="comDivergencia" class="font-semibold text-gray-800 cursor-pointer select-none">Recebido com Divergência?</label>
+          <label for="comDivergencia" class="font-semibold text-gray-800 dark:text-gray-200 cursor-pointer select-none">Recebido com Divergência?</label>
           {#if hasQuantityDivergence}
-            <p class="text-orange-600 font-medium text-xs mt-0.5">
+            <p class="text-orange-600 dark:text-orange-400 font-medium text-xs mt-0.5">
               (Marcado automaticamente por diferença de quantidade)
             </p>
           {/if}
@@ -152,26 +152,26 @@
 
       {#if comDivergencia}
         <div class="animate-fadeIn">
-          <label for="observacaoEscola" class="block text-sm font-semibold text-gray-700 mb-1">
+          <label for="observacaoEscola" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
             Descreva a Divergência (Obrigatório)
           </label>
           <textarea
             id="observacaoEscola"
             rows="3"
-            class="w-full rounded-lg border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-400 shadow-sm px-4 py-2 transition"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-red-500 focus:ring-2 focus:ring-red-400 shadow-sm px-4 py-2 transition placeholder-gray-400 dark:placeholder-gray-400"
             bind:value={observacaoEscola}
-            placeholder="Ex: Veio 2kg de arroz a menos (recebi 8kg de 10kg aprovados) ou recebeu porém estragado/vencido."
+            placeholder="Ex: Veio 2kg de arroz a menos (recebi 8kg de 10kg aprovados)."
           />
         </div>
       {/if}
     </div>
   </div>
 
-  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 border-t pt-6">
+  <div class="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3 border-t border-gray-200 dark:border-gray-700 pt-6">
     <button
       type="button"
       on:click={() => dispatch('cancel')}
-      class="w-full sm:w-auto bg-gray-100 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition shadow-sm"
+      class="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-sm"
     >
       Cancelar
     </button>

@@ -2,6 +2,7 @@
 module.exports = {
   // 1. Removemos a linha da flowbite-svelte daqui
   content: ['./src/**/*.{html,js,svelte,ts}'], 
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

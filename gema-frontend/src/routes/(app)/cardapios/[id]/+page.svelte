@@ -296,11 +296,11 @@
   }
 </script>
 
-<div class="space-y-6 animate-fadeIn pb-10 p-4 md:p-6">
+<div class="space-y-6 animate-fadeIn pb-10 p-4 md:p-6 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
   <div class="mb-2">
     <a
       href="/cardapios"
-      class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-semibold transition-all group"
+      class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-semibold transition-all group"
     >
       <ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Voltar
     </a>
@@ -308,26 +308,26 @@
 
   {#if isLoading}
     <div class="text-center py-10">
-      <p class="text-gray-500 text-lg font-medium">⏳ Carregando...</p>
+      <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">⏳ Carregando...</p>
     </div>
   {:else if error}
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium">
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
       {error}
     </div>
   {:else if cardapio}
     <div
-      class="flex flex-col md:flex-row justify-between items-start gap-4 bg-gradient-to-r from-primary-50 to-white p-6 rounded-xl shadow-md border border-gray-100"
+      class="flex flex-col md:flex-row justify-between items-start gap-4 bg-gradient-to-r from-primary-50 to-white dark:from-gray-800 dark:to-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
     >
       <div class="space-y-2 flex-1 min-w-0 w-full">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight break-words">{cardapio.name}</h1>
-        <p class="text-sm text-gray-400">
-          Criado por: <span class="font-medium text-gray-600">{cardapio.createdBy?.name || '(Usuário Excluído)'}</span>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight break-words">{cardapio.name}</h1>
+        <p class="text-sm text-gray-400 dark:text-gray-500">
+          Criado por: <span class="font-medium text-gray-600 dark:text-gray-300">{cardapio.createdBy?.name || '(Usuário Excluído)'}</span>
         </p>
         <span
           class="inline-block px-3 py-1 rounded-full text-xs font-semibold shadow-sm {cardapio.status ===
           'publicado'
-            ? 'bg-green-100 text-green-800 border border-green-300'
-            : 'bg-yellow-100 text-yellow-800 border border-yellow-300'}"
+            ? 'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-800'
+            : 'bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-800'}"
         >
           {cardapio.status === 'publicado' ? 'Publicado' : 'Rascunho'}
         </span>
@@ -351,14 +351,14 @@
         {@const isHoliday = cardapio?.holidayWeekdays?.includes(dia)}
         {@const specificDate = diaSemanaParaData[dia]}
         <div
-          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col {isHoliday
-            ? 'bg-gray-100 opacity-80'
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col {isHoliday
+            ? 'bg-gray-100 dark:bg-gray-700 opacity-80'
             : ''}"
         >
           <div
-            class="bg-gradient-to-r from-primary-600/10 to-primary-50 p-3 border-b text-center relative min-h-[60px] flex flex-col justify-center"
+            class="bg-gradient-to-r from-primary-600/10 to-primary-50 dark:from-primary-900/20 dark:to-gray-800 p-3 border-b border-gray-100 dark:border-gray-700 text-center relative min-h-[60px] flex flex-col justify-center"
           >
-            <h2 class="text-lg font-semibold text-primary-700 capitalize tracking-wide">
+            <h2 class="text-lg font-semibold text-primary-700 dark:text-primary-400 capitalize tracking-wide">
               {dia}{specificDate ? ` - ${format(specificDate, 'dd/MM')}` : ''}
             </h2>
             {#if isHoliday}
@@ -371,7 +371,7 @@
               <button
                 on:click={() => handleToggleHoliday(dia)}
                 disabled={isActionLoading || isHolidayLoading[dia]}
-                class="absolute top-2 left-2 p-1 rounded-full hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-400"
+                class="absolute top-2 left-2 p-1 rounded-full hover:bg-white/50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-400"
                 title={isHoliday ? 'Desmarcar como feriado' : 'Marcar como feriado'}
               >
                 {#if isHolidayLoading[dia]}
@@ -387,27 +387,27 @@
                 {:else}
                   <CalendarOff
                     class="w-4 h-4 {isHoliday
-                      ? 'text-red-600'
-                      : 'text-gray-400 hover:text-gray-600'}"
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}"
                   />
                 {/if}
               </button>
             {/if}
           </div>
 
-          <div class="flex flex-col divide-y flex-1">
+          <div class="flex flex-col divide-y divide-gray-100 dark:divide-gray-700 flex-1">
             <div class="p-4 space-y-2 flex flex-col flex-1">
               <h4 class="meal-header morning text-sm">☀️ Manhã</h4>
               {#if refeicoesGrid[dia]?.manha && !isHoliday}
                 {@const refeicao = refeicoesGrid[dia]['manha']}
                 <div class="flex-1 flex flex-col">
                     <div
-                        class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
+                        class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 shadow-inner border border-gray-100 dark:border-gray-600 flex-1"
                     >
-                        <p class="text-sm font-medium italic text-gray-800 mb-1 break-words">
+                        <p class="text-sm font-medium italic text-gray-800 dark:text-gray-200 mb-1 break-words">
                         “{refeicao.description}”
                         </p>
-                        <ul class="list-disc list-inside text-xs text-gray-600 space-y-0.5">
+                        <ul class="list-disc list-inside text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
                         {#each refeicao.products as item (item.id)}
                             <li class="truncate">{item?.name || '(Produto Excluído)' }</li>
                         {/each}
@@ -417,12 +417,12 @@
                     <div class="flex gap-2 mt-2 justify-end">
                       <button
                         on:click={() => handleEditRefeicao(refeicao)}
-                        class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50"
+                        class="text-xs text-primary-600 dark:text-primary-400 hover:underline font-medium disabled:opacity-50"
                         disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}>Editar</button
                       >
                       <button
                         on:click={() => handleDeleteRefeicao(refeicao)}
-                        class="text-xs text-red-500 hover:underline font-medium disabled:opacity-50"
+                        class="text-xs text-red-500 dark:text-red-400 hover:underline font-medium disabled:opacity-50"
                         disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}
                       >
                         {#if isRefeicaoActionLoading[refeicao.id]}...{:else}Remover{/if}
@@ -434,16 +434,16 @@
                 <button
                   on:click={() => handleAddRefeicao(dia, 'manha')}
                   disabled={isActionLoading || isHoliday}
-                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-gray-700 border-2 border-dashed border-primary-200 dark:border-gray-600 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar
                 </button>
               {:else if !isHoliday}
-                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
+                <p class="text-xs text-gray-400 dark:text-gray-500 italic flex-1 flex items-center justify-center py-4">
                   (Sem refeição)
                 </p>
               {:else}
-                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
+                <p class="text-xs text-gray-400 dark:text-gray-500 italic flex-1 flex items-center justify-center py-4">
                   (Feriado)
                 </p>
               {/if}
@@ -455,12 +455,12 @@
                 {@const refeicao = refeicoesGrid[dia]['tarde']}
                 <div class="flex-1 flex flex-col">
                     <div
-                        class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 shadow-inner border border-gray-100 flex-1"
+                        class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 shadow-inner border border-gray-100 dark:border-gray-600 flex-1"
                     >
-                        <p class="text-sm font-medium italic text-gray-800 mb-1 break-words">
+                        <p class="text-sm font-medium italic text-gray-800 dark:text-gray-200 mb-1 break-words">
                         “{refeicao.description}”
                         </p>
-                        <ul class="list-disc list-inside text-xs text-gray-600 space-y-0.5">
+                        <ul class="list-disc list-inside text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
                         {#each refeicao.products as item (item.id)}
                             <li class="truncate">{item?.name || '(Produto Excluído)' }</li>
                         {/each}
@@ -470,12 +470,12 @@
                     <div class="flex gap-2 mt-2 justify-end">
                       <button
                         on:click={() => handleEditRefeicao(refeicao)}
-                        class="text-xs text-primary-600 hover:underline font-medium disabled:opacity-50"
+                        class="text-xs text-primary-600 dark:text-primary-400 hover:underline font-medium disabled:opacity-50"
                         disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}>Editar</button
                       >
                       <button
                         on:click={() => handleDeleteRefeicao(refeicao)}
-                        class="text-xs text-red-500 hover:underline font-medium disabled:opacity-50"
+                        class="text-xs text-red-500 dark:text-red-400 hover:underline font-medium disabled:opacity-50"
                         disabled={isHoliday || isRefeicaoActionLoading[refeicao.id]}
                       >
                         {#if isRefeicaoActionLoading[refeicao.id]}...{:else}Remover{/if}
@@ -487,16 +487,16 @@
                 <button
                   on:click={() => handleAddRefeicao(dia, 'tarde')}
                   disabled={isActionLoading || isHoliday}
-                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 hover:bg-primary-50 border-2 border-dashed border-primary-200 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-gray-700 border-2 border-dashed border-primary-200 dark:border-gray-600 rounded-lg py-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusCircle class="w-4 h-4 text-primary-500" /> Adicionar
                 </button>
               {:else if !isHoliday}
-                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
+                <p class="text-xs text-gray-400 dark:text-gray-500 italic flex-1 flex items-center justify-center py-4">
                   (Sem refeição)
                 </p>
               {:else}
-                <p class="text-xs text-gray-400 italic flex-1 flex items-center justify-center py-4">
+                <p class="text-xs text-gray-400 dark:text-gray-500 italic flex-1 flex items-center justify-center py-4">
                   (Feriado)
                 </p>
               {/if}
@@ -506,8 +506,8 @@
       {/each}
     </div>
   {:else}
-    <div class="text-center p-10 bg-white rounded-lg shadow-sm border">
-      <p class="text-gray-500 font-medium">Cardápio não encontrado.</p>
+    <div class="text-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+      <p class="text-gray-500 dark:text-gray-400 font-medium">Cardápio não encontrado.</p>
     </div>
   {/if}
 </div>

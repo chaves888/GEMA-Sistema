@@ -48,7 +48,6 @@
       },
     });
   }
-
   function initEndDate(node: HTMLInputElement) {
     flatpickrEndInstance = flatpickr(node, flatpickrOptions);
   }
@@ -77,11 +76,10 @@
       isLoading = false;
     }
   }
-
+  
   function getReportHeaders() {
     return [['Escola', 'Produto', 'Unidade', 'Qtd. Total Enviada']];
   }
-
   function getReportBody() {
     if (!reportData) return [];
     return reportData.map((row) => [
@@ -115,7 +113,7 @@
       toast.error('Falha ao gerar o PDF.');
     }
   }
-
+  
   async function handleDownloadExcel() {
     if (!reportData) return;
     try {
@@ -129,10 +127,10 @@
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Envios');
       
       worksheet['!cols'] = [
-        { wch: 40 }, 
-        { wch: 30 }, 
-        { wch: 10 }, 
-        { wch: 20 }
+        { wch: 40 }, // Escola
+        { wch: 30 }, // Produto
+        { wch: 10 }, // Unidade
+        { wch: 20 }  // Qtd. Total Enviada
       ];
 
       XLSX.writeFile(workbook, `relatorio_envios_estoque_${startDate}_a_${endDate}.xlsx`);
@@ -151,31 +149,37 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 lg:p-6 space-y-6 animate-fadeIn">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6 space-y-6 animate-fadeIn transition-colors duration-300">
   <div class="mb-2">
     <a
       href="/relatorios"
-      class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-semibold transition-all group"
+      class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-semibold transition-all group"
     >
       <ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" />
       Voltar para Relatórios
     </a>
   </div>
-  
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 backdrop-blur-md p-5 rounded-xl shadow-sm border">
+
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+  >
     <div>
-      <h1 class="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+      <h1
+        class="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent"
+      >
         Relatório de Envios do Estoque Central
       </h1>
-      <p class="text-gray-600 mt-1 text-sm">
+      <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm">
         Auditoria de produtos enviados pela Prefeitura (baseado no log de movimentações).
       </p>
     </div>
   </div>
 
-  <div class="bg-white/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+  <div
+    class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row flex-wrap gap-4 items-end"
+  >
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="startDate" class="block text-sm font-medium text-gray-700">Data de Início</label>
+      <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Início</label>
       <div class="relative mt-1">
         <input
           id="startDate"
@@ -183,15 +187,16 @@
           placeholder="dd/mm/aaaa"
           bind:value={startDate}
           use:initStartDate
-          class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10"
+          class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
         />
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-          <Calendar class="w-5 h-5 text-gray-400" />
+          <Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" />
         </div>
       </div>
     </div>
+
     <div class="flex-1 w-full md:min-w-[150px]">
-      <label for="endDate" class="block text-sm font-medium text-gray-700">Data de Fim</label>
+      <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Fim</label>
       <div class="relative mt-1">
         <input
           id="endDate"
@@ -199,10 +204,10 @@
           placeholder="dd/mm/aaaa"
           bind:value={endDate}
           use:initEndDate
-          class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10"
+          class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
         />
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-          <Calendar class="w-5 h-5 text-gray-400" />
+          <Calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" />
         </div>
       </div>
     </div>
@@ -221,9 +226,12 @@
     </button>
   </div>
 
+
   {#if reportData}
-    <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-      <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row flex-wrap gap-3 justify-end">
+    <div
+      class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden"
+    >
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex flex-col sm:flex-row flex-wrap gap-3 justify-end">
         <button
           on:click={handleDownloadExcel}
           class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-sm w-full sm:w-auto"
@@ -238,28 +246,40 @@
         </button>
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Escola (Destino)</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Produto</th>
-              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Unid.</th>
-              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Qtd. Total Enviada</th>
-            </tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >Escola (Destino)</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >Produto</th
+              >
+              <th
+                class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >Unid.</th
+              >
+              <th
+                class="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >Qtd. Total Enviada</th
+              >
+              </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {#each reportData as row (`${row.escolaName}-${row.productName}`)}
-              <tr class="hover:bg-gray-50/50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-gray-200">
                   {row.escolaName}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {row.productName}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500 text-center">
                   {row.unit}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold text-right">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-white font-bold text-right">
                   {row.quantidadeEnviada}
                 </td>
               </tr>
@@ -272,6 +292,7 @@
 </div>
 
 <style>
+  /* Esconde o ícone nativo de calendário */
   :global(input[type="date"]::-webkit-inner-spin-button),
   :global(input[type="date"]::-webkit-calendar-picker-indicator),
   :global(input[type="time"]::-webkit-calendar-picker-indicator) {
