@@ -360,4 +360,5 @@
   .animate-fadeIn {
     animation: fadeIn 0.25s ease-out;
   }
+  
 </style>
