@@ -4,6 +4,7 @@
   import { toast } from '$lib/toast';
   import { ArrowLeft, FileText, Download, Loader2, Calendar, FileSpreadsheet } from 'lucide-svelte';
   import * as XLSX from 'xlsx';
+  import GemaLogo from '$lib/assets/logo-gema.png'; // <--- IMPORT DA LOGO
   
   import { format, parseISO } from 'date-fns';
   import { ptBR } from 'date-fns/locale';
@@ -94,15 +95,22 @@
     if (!reportData) return;
     try {
       const doc = new jsPDF();
+      
+      const img = new Image();
+      img.src = GemaLogo;
+      await new Promise((resolve) => { img.onload = resolve; });
+      doc.addImage(img, 'PNG', 14, 10, 30, 15);
+
       doc.setFontSize(16);
-      doc.text('Relatório de Envios do Estoque Central', 14, 20);
+      doc.text('Relatório de Envios do Estoque Central', 14, 35);
+      
       doc.setFontSize(10);
-      doc.text(`Período: ${startDate} a ${endDate}`, 14, 26);
+      doc.text(`Período: ${startDate} a ${endDate}`, 14, 41);
 
       autoTable(doc, {
         head: getReportHeaders(),
         body: getReportBody(),
-        startY: 30,
+        startY: 50,
         theme: 'grid',
         headStyles: { fillColor: [13, 71, 161] },
       });
@@ -159,7 +167,7 @@
       Voltar para Relatórios
     </a>
   </div>
-
+  
   <div
     class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
   >

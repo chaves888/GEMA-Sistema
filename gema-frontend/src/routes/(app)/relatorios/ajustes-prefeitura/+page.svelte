@@ -4,6 +4,7 @@
   import { ArrowLeft, FileText, Download, Loader2, Calendar, FileSpreadsheet } from 'lucide-svelte';
   import * as XLSX from 'xlsx';
   import { onMount } from 'svelte';
+  import GemaLogo from '$lib/assets/logo-gema.png'; // <--- IMPORT DA LOGO
 
   // @ts-ignore
   import flatpickr from 'flatpickr';
@@ -120,15 +121,23 @@
     if (!reportData) return;
     try {
       const doc = new jsPDF();
+
+      // 1. Carregar a Logo
+      const img = new Image();
+      img.src = GemaLogo;
+      await new Promise((resolve) => { img.onload = resolve; });
+      doc.addImage(img, 'PNG', 14, 10, 30, 15);
+
       doc.setFontSize(16);
-      doc.text('Relatório de Ajustes e Perdas (Estoque Central)', 14, 20);
+      doc.text('Relatório de Ajustes e Perdas (Estoque Central)', 14, 35);
+      
       doc.setFontSize(10);
-      doc.text(`Período: ${startDate} a ${endDate}`, 14, 26);
+      doc.text(`Período: ${startDate} a ${endDate}`, 14, 41);
 
       autoTable(doc, {
         head: getReportHeaders(),
         body: getReportBody(),
-        startY: 30,
+        startY: 50, // Tabela começa mais para baixo
         theme: 'grid',
         headStyles: { fillColor: [13, 71, 161] },
       });

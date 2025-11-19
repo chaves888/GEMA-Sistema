@@ -9,7 +9,7 @@
     let title = 'Opa! Algo deu errado';
     let description = 'Ocorreu um erro inesperado.';
 
-    // Lógica de mensagens (igual a antes)
+    // Lógica de mensagens
     $: if (statusCode === 404) {
         title = 'Página não encontrada';
         description = 'O endereço que você tentou acessar não existe ou foi movido.';
@@ -23,16 +23,19 @@
 
 <div class="flex h-full flex-col items-center justify-center p-6 text-center animate-fadeIn">
     <div class="max-w-md w-full py-12">
-        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 shadow-lg mb-6">
+        <!-- Círculo do ícone: Muda de cor dinamicamente -->
+        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full shadow-lg mb-6 {statusCode === 404 ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-red-100 dark:bg-red-900/30'}">
             {#if statusCode === 404}
-                <AlertTriangle class="h-12 w-12 text-red-600 dark:text-red-400" />
+                <!-- Ícone Amarelo para 404 -->
+                <AlertTriangle class="h-12 w-12 text-yellow-600 dark:text-yellow-400" />
             {:else}
+                <!-- Ícone Vermelho para outros erros -->
                 <ServerCrash class="h-12 w-12 text-red-600 dark:text-red-400" />
             {/if}
         </div>
 
         <div class="space-y-3">
-            <p class="text-lg font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
+            <p class="text-lg font-bold uppercase tracking-wider {statusCode === 404 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}">
                 Erro {statusCode}
             </p>
             <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
@@ -41,16 +44,6 @@
             <p class="text-base text-gray-600 dark:text-gray-300">
                 {description}
             </p>
-        </div>
-
-        <div class="mt-10">
-             <a 
-                href="/" 
-                class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-md transition-transform hover:scale-105 active:scale-95"
-             >
-                <ArrowLeft class="w-5 h-5" />
-                Voltar para o Início
-             </a>
         </div>
     </div>
 </div>

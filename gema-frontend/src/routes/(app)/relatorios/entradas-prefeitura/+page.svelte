@@ -3,6 +3,7 @@
   import { toast } from '$lib/toast';
   import { ArrowLeft, FileText, Download, Loader2, Calendar, FileSpreadsheet } from 'lucide-svelte';
   import * as XLSX from 'xlsx';
+  import GemaLogo from '$lib/assets/logo-gema.png'; // <--- IMPORT DA LOGO
 
   // @ts-ignore
   import flatpickr from 'flatpickr';
@@ -53,25 +54,34 @@
     if (!reportData) return [];
     return reportData.map(row => [row.productName, row.unit, row.quantidadeAdicionada, row.motivoObservacao || 'Ajuste', row.userName]);
   }
+
   async function handleDownloadPDF() {
      if (!reportData) return;
      try {
         const doc = new jsPDF();
+
+        const img = new Image();
+        img.src = GemaLogo;
+        await new Promise((resolve) => { img.onload = resolve; });
+        doc.addImage(img, 'PNG', 14, 10, 30, 15);
+
         doc.setFontSize(16);
-        doc.text('Relatório de Entradas (Estoque Central)', 14, 20);
+        doc.text('Relatório de Entradas (Estoque Central)', 14, 35);
+        
         doc.setFontSize(10);
-        doc.text(`Período: ${startDate} a ${endDate}`, 14, 26);
+        doc.text(`Período: ${startDate} a ${endDate}`, 14, 41);
 
         autoTable(doc, { 
             head: getReportHeaders(), 
-            body: getReportBody(),
-            startY: 30,
+            body: getReportBody(), 
+            startY: 50,
             theme: 'grid',
             headStyles: { fillColor: [13, 71, 161] }
         });
         doc.save(`relatorio_entradas_${startDate}_a_${endDate}.pdf`);
      } catch (e) { console.error(e); toast.error('Erro ao gerar PDF'); }
   }
+
   async function handleDownloadExcel() {
     if (!reportData) return;
     try {
@@ -86,7 +96,7 @@
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6 space-y-6 animate-fadeIn transition-colors duration-300">
   <div class="mb-2">
     <a href="/relatorios" class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-semibold transition-all group">
-      <ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Voltar
+      <ArrowLeft class="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Voltar para Relatórios
     </a>
   </div>
 
