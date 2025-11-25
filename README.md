@@ -1,6 +1,6 @@
 # GEMA - Sistema de Gerenciamento Escolar de Merenda e Alimentos
 
-![Logo GEMA](src/lib/assets/logo-gema.png)
+![Logo GEMA](gema-frontend/src/lib/assets/logo-gema.png)
 
 > **TCC - Trabalho de Conclusão de Curso**
 > **Curso:** Sistemas para Internet - UniALFA
