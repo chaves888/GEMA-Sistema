@@ -2,8 +2,8 @@
 
 ![Logo GEMA](gema-frontend/src/lib/assets/logo-gema.png)
 
-> **TCC - Trabalho de Conclusão de Curso**
-> **Curso:** Sistemas para Internet - UniALFA
+> **TCC - Trabalho de Conclusão de Curso** <br>
+> **Curso:** Sistemas para Internet - UniALFA<br>
 > **Autor:** Leonardo Chaves Batista da Silva
 
 ## 📌 Sobre o Projeto
