@@ -17,15 +17,15 @@ O objetivo principal é solucionar problemas como o desperdício de alimentos, a
 O projeto utiliza uma arquitetura moderna, separada em Frontend e Backend:
 
 ### Front-end
-* ![Svelte](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white) **SvelteKit**
-* ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) **TailwindCSS**
+* ![Svelte](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white) 
+* ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 * **Lucide Svelte** (Ícones)
 * **Flatpickr** (Seleção de datas)
 
 ### Back-end
-* ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white) **NestJS**
-* ![TypeORM](https://img.shields.io/badge/TypeORM-FE0702?style=for-the-badge&logo=typeorm&logoColor=white) **TypeORM**
-* ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) **MySQL**
+* ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+* ![TypeORM](https://img.shields.io/badge/TypeORM-FE0702?style=for-the-badge&logo=typeorm&logoColor=white) 
+* ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) 
 * **JWT & Passport** (Autenticação e Segurança)
 * **Nodemailer** (Envio de e-mails)
 
